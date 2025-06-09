@@ -3,16 +3,18 @@ import openai
 from dotenv import load_dotenv
 import os
 import re
-from app.adapters.db_adapter import SQLiteDBAdapter
-import sqlite3
+from app.adapters.db_adapter import MongoDBAdapter
 
 # Load environment variables from .env file
 load_dotenv()
+MongoDBAdapter.connect()
 
 
 # Get API key from environment variable
 openai.api_key = os.getenv("OPENAI_API_KEY")
 client = openai.OpenAI()
+
+
 
 
 def extract_questions(text):
@@ -97,17 +99,19 @@ def createQuestion(requestBody: QuestionCreate) -> QuestionResponse:
     )
     return questionResponse
     
-def add_quetion_to_db(requestBody: Question, db:sqlite3.Connection ) -> None:
+async def add_to_db(
+    question: Question
+):
     try:
-        db.add_question(
-            section=requestBody.section,
-            question_type=requestBody.questionType,
-            difficulty=requestBody.difficulty,
-            question=requestBody.question,
-            correctAnswer=requestBody.correctAnswer,
-            mcqAnswers=requestBody.mcqAnswers or []
+        await MongoDBAdapter.add_question(
+            section=question.section,
+            question_type=question.questionType,
+            difficulty=question.difficulty,
+            question=question.question,
+            correctAnswer=question.correctAnswer,
+            mcqAnswers=question.mcqAnswers
         )
-    except exception as e:
-        print(f"An error occurred while adding the question to the database: {e}")
-        raise e
+        return {"message": "Question added successfully"}
+    except Exception as e:
+        return {"error": str(e)}
     
