@@ -5,12 +5,14 @@ import { MathJaxContext, MathJax } from "better-react-mathjax";
 interface GeneratedQuestionsProps {
   questions: string[];
   correctAnswers: string[];
+  mcqAnswers?: string[];
   onAddToDB?: () => void;
 }
 
 const GeneratedQuestions = ({
   questions,
   correctAnswers,
+  mcqAnswers,
   onAddToDB,
 }: GeneratedQuestionsProps) => {
   if (!questions || questions.length === 0) return null;
@@ -38,6 +40,13 @@ const GeneratedQuestions = ({
                   correctAnswers[index] ?? ""
                 }`}</MathJax>
               </h4>
+              {mcqAnswers && mcqAnswers[index] && (
+                <h4>
+                  <MathJax
+                    inline
+                  >{`MCQ Answers: ${mcqAnswers[index]}`}</MathJax>
+                </h4>
+              )}
             </MathJaxContext>
           </Box>
           <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>

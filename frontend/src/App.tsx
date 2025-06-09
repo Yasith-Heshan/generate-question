@@ -15,7 +15,7 @@ function App() {
 
   const [questions, setQuestions] = useState([]);
   const [correctAnswers, setCorrectAnswers] = useState([]);
-  // const [mcqAnswers, setMcqAnswers] = useState([]);
+  const [mcqAnswers, setMcqAnswers] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleChange = (
@@ -38,7 +38,7 @@ function App() {
       setIsGenerating(true);
       setQuestions([]);
       setCorrectAnswers([]);
-      // setMcqAnswers([]);
+      setMcqAnswers([]);
       const response = await axios.post(
         "http://127.0.0.1:8000/api/v1/questions",
         form
@@ -46,7 +46,7 @@ function App() {
       console.log("Response from server:", response.data);
       setQuestions(response.data.questions);
       setCorrectAnswers(response.data.correctAnswers);
-      // setMcqAnswers(response.data.mcqAnswers);
+      setMcqAnswers(response.data.mcqAnswers);
     } catch (error) {
       console.error("Error generating questions:", error);
       alert("Failed to generate questions. Please try again.");
@@ -57,11 +57,11 @@ function App() {
 
   async function handleAddToDB(): Promise<void> {
     try {
-      // await axios.post("http://127.0.0.1:8000/api/v1/questions/save", {
-      //   questions,
-      //   correctAnswers,
-      //   mcqAnswers,
-      // });
+      await axios.post("http://127.0.0.1:8000/api/v1/questions/save", {
+        questions,
+        correctAnswers,
+        mcqAnswers,
+      });
       alert("Questions added to database successfully!");
     } catch (error) {
       console.error("Error adding questions to DB:", error);
@@ -136,6 +136,7 @@ function App() {
       <GeneratedQuestions
         questions={questions}
         correctAnswers={correctAnswers}
+        mcqAnswers={mcqAnswers}
         onAddToDB={handleAddToDB}
       />
     </Box>

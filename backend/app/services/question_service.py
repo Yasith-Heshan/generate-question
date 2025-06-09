@@ -43,7 +43,7 @@ def extract_mcq_answers(text):
     'MCQ_Answers: <mcq_answers>'
     Returns a list of mcq answer strings.
     """
-    pattern = r"MCQ_Answers:\s*(.*?)(?=\nQuestion:|\Z)"
+    pattern = r"MCQ_Answers:\s*(.*?)(?=\n\nQuestion:|\Z)"
     matches = re.findall(pattern, text, re.DOTALL)
     # Strip whitespace from each mcq answer
     return [a.strip() for a in matches]
@@ -71,7 +71,6 @@ def generate_math_word_problem(question_description,count=1):
         # reasoning={"effort": "medium"},
         input=math_prompt,
     )
-    # print(response.output_text)
     # extract the generated question from the response
     questions = extract_questions(response.output_text)
     answers = extract_answers(response.output_text)
@@ -91,7 +90,7 @@ def createQuestion(requestBody: QuestionCreate) -> QuestionResponse:
     questionResponse = QuestionResponse(
         questions=questions,
         correctAnswers=answers,
-        mcq_answers=mcq_answers,
+        mcqAnswers=mcq_answers,
         section=section,
         questionType=questionType,
         difficulty=difficulty
