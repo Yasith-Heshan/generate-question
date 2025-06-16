@@ -1,12 +1,13 @@
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import { MathJaxContext, MathJax } from "better-react-mathjax";
+import type { GeneratedQuestionInfo } from "../utils/interface";
 
 interface GeneratedQuestionsProps {
   questions: string[];
   correctAnswers: string[];
   mcqAnswers?: string[];
-  onAddToDB?: () => void;
+  onAddToDB: (generatedQuestionInfo: GeneratedQuestionInfo) => void;
 }
 
 const GeneratedQuestions = ({
@@ -25,8 +26,21 @@ const GeneratedQuestions = ({
     <Box sx={{ marginTop: 4 }}>
       <h2>Generated Questions</h2>
       {questions.map((question, index) => (
-        <>
-          <Box key={index} sx={{ marginBottom: 2 }}>
+        <Box
+          sx={{
+            bgcolor: "#f5f5f5",
+            padding: 2,
+            borderRadius: 1,
+            boxShadow: 1,
+            marginBottom: 2,
+          }}
+        >
+          <Box
+            key={index}
+            sx={{
+              marginBottom: 2,
+            }}
+          >
             <MathJaxContext config={config}>
               <h3>
                 {" "}
@@ -50,11 +64,22 @@ const GeneratedQuestions = ({
             </MathJaxContext>
           </Box>
           <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-            <Button variant="outlined" onClick={onAddToDB}>
+            <Button
+              variant="outlined"
+              onClick={() => {
+                onAddToDB({
+                  question: questions[index],
+                  correctAnswer: correctAnswers[index],
+                  mcqAnswers: mcqAnswers
+                    ? mcqAnswers[index].split(",")
+                    : undefined,
+                });
+              }}
+            >
               Add to DB
             </Button>
           </Box>
-        </>
+        </Box>
       ))}
     </Box>
   );
