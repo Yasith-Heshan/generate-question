@@ -5,8 +5,17 @@ up:
 
 down:
 	docker-compose down
+
+make restart:
+	docker-compose down && docker-compose up -d
 logs:
 	docker-compose logs -f
+
+build:
+	docker-compose build
+
+pull:
+	git pull
 help:
 	@echo "Available commands:"
 	@echo "  make up     - Start the Docker containers"
