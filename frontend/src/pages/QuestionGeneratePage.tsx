@@ -9,15 +9,21 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { useState } from "react";
-import axios from "axios";
 import GeneratedQuestions from "../Components/GeneratedQeustions";
 import type {
   GeneratedQuestionInfo,
+  QuestionGenerationRequestBody,
   QuestionSaveRequestBody,
 } from "../utils/interface";
+import {
+  generateQuestion,
+  saveAllQuestions,
+  saveQuestion,
+} from "../api/openAiService";
+import { toast } from "react-toastify";
 
 export const QuestionGeneratePage = () => {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<QuestionGenerationRequestBody>({
     section: "",
     description: "",
     count: 1,
@@ -25,9 +31,9 @@ export const QuestionGeneratePage = () => {
     difficulty: 1,
   });
 
-  const [questions, setQuestions] = useState([]);
-  const [correctAnswers, setCorrectAnswers] = useState([]);
-  const [mcqAnswers, setMcqAnswers] = useState([]);
+  const [questions, setQuestions] = useState<string[]>([]);
+  const [correctAnswers, setCorrectAnswers] = useState<string[]>([]);
+  const [mcqAnswers, setMcqAnswers] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleChange = (
@@ -39,23 +45,15 @@ export const QuestionGeneratePage = () => {
       [name as string]:
         name === "count" || name === "difficulty" ? Number(value) : value,
     }));
-    console.log(form);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // handle form submission
     try {
+      clearState();
       setIsGenerating(true);
-      setQuestions([]);
-      setCorrectAnswers([]);
-      setMcqAnswers([]);
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/v1/questions",
-        form
-      );
-      console.log("Response from server:", response.data);
+      const response = await generateQuestion(form);
       setQuestions(response.data.questions);
       setCorrectAnswers(response.data.correctAnswers);
       setMcqAnswers(response.data.mcqAnswers);
@@ -67,29 +65,59 @@ export const QuestionGeneratePage = () => {
     }
   };
 
+  const removeAddedQuestion = (index: number) => {
+    setQuestions((prev) => prev.filter((_, i) => i !== index));
+    setCorrectAnswers((prev) => prev.filter((_, i) => i !== index));
+    setMcqAnswers((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const clearState = () => {
+    setQuestions([]);
+    setCorrectAnswers([]);
+    setMcqAnswers([]);
+  };
+
   async function handleAddToDB(
     generatedQuestionInfo: GeneratedQuestionInfo
   ): Promise<void> {
     try {
-      await axios.post(
-        "http://127.0.0.1:8000/api/v1/add_question",
-        {
-          ...generatedQuestionInfo,
+      await saveQuestion({
+        ...generatedQuestionInfo,
+        section: form.section,
+        questionType: form.questionType,
+        difficulty: form.difficulty,
+      } as QuestionSaveRequestBody);
+      removeAddedQuestion(generatedQuestionInfo.index);
+      toast.success("Question added to the database successfully!");
+    } catch (error) {
+      console.error("Error adding questions to DB:", error);
+      toast.error("Failed to add question to the database. Please try again.");
+    }
+  }
+
+  const handleAddAllToDB = async () => {
+    const questionSaveRequestBody: QuestionSaveRequestBody[] = questions.map(
+      (question, index) =>
+        ({
           section: form.section,
           questionType: form.questionType,
           difficulty: form.difficulty,
-        } as QuestionSaveRequestBody,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+          question: question,
+          correctAnswer: correctAnswers[index],
+          mcqAnswers: mcqAnswers[index].split(",") || [],
+        } as QuestionSaveRequestBody)
+    );
+    try {
+      await saveAllQuestions(questionSaveRequestBody);
+      toast.success("All questions added to the database successfully!");
+      clearState();
     } catch (error) {
-      console.error("Error adding questions to DB:", error);
-      alert("Failed to add questions to the database.");
+      console.error("Error adding all questions to DB:", error);
+      toast.error(
+        "Failed to add all questions to the database. Please try again."
+      );
     }
-  }
+  };
 
   return (
     <Grid container spacing={2} justifyContent="center">
@@ -121,20 +149,19 @@ export const QuestionGeneratePage = () => {
             />
 
             <TextField
-              label="Count"
-              name="count"
-              type="number"
-              value={form.count}
-              onChange={handleChange}
-              fullWidth
-              required
-            />
-
-            <TextField
               label="Difficulty"
               name="difficulty"
               type="number"
               value={form.difficulty}
+              onChange={handleChange}
+              fullWidth
+              required
+            />
+            <TextField
+              label="Count"
+              name="count"
+              type="number"
+              value={form.count}
               onChange={handleChange}
               fullWidth
               required
@@ -173,6 +200,19 @@ export const QuestionGeneratePage = () => {
               mcqAnswers={mcqAnswers}
               onAddToDB={handleAddToDB}
             />
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: 2,
+            }}
+          >
+            {!isGenerating && (
+              <Button variant="contained" onClick={() => handleAddAllToDB()}>
+                Add All To DB
+              </Button>
+            )}
           </Box>
         </Box>
       </Grid>

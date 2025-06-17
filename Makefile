@@ -20,5 +20,8 @@ help:
 	@echo "Available commands:"
 	@echo "  make up     - Start the Docker containers"
 	@echo "  make down   - Stop the Docker containers"
+	@echo "  make restart - Restart the Docker containers"
+	@echo "  make build  - Build the Docker images"
+	@echo "  make pull   - Pull the latest changes from the repository"
 	@echo "  make logs   - View logs of the Docker containers"
 	@echo "  make help   - Show this help message"

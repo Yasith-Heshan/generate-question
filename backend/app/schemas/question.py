@@ -1,14 +1,14 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from typing import Optional, List
     
-class QuestionCreate(BaseModel):
+class QuestionGenerateRequestBody(BaseModel):
     section: str
     questionType: str
     difficulty: int
     description: str
     count: int
     
-class QuestionResponse(BaseModel):
+class QuestionResponseBody(BaseModel):
     questions: List[str]
     correctAnswers: List[str]
     mcqAnswers: Optional[List[str]]=[]

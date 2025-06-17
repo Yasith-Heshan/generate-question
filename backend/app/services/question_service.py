@@ -1,9 +1,11 @@
-from app.schemas.question import QuestionCreate, QuestionResponse, Question
+from app.schemas.question import QuestionGenerateRequestBody, QuestionResponseBody, Question
 import openai
 from dotenv import load_dotenv
 import os
 import re
 from app.adapters.db_adapter import MongoDBAdapter
+from fastapi import HTTPException
+
 
 # Load environment variables from .env file
 load_dotenv()
@@ -82,14 +84,14 @@ def generate_math_word_problem(question_description,count=1):
 
 
 
-def createQuestion(requestBody: QuestionCreate) -> QuestionResponse:
+def createQuestion(requestBody: QuestionGenerateRequestBody) -> QuestionResponseBody:
     description = requestBody.description
     count = requestBody.count
     section = requestBody.section
     questionType = requestBody.questionType
     difficulty = requestBody.difficulty
     questions, answers, mcq_answers = generate_math_word_problem(description, count)
-    questionResponse = QuestionResponse(
+    questionResponse = QuestionResponseBody(
         questions=questions,
         correctAnswers=answers,
         mcqAnswers=mcq_answers,
@@ -113,5 +115,11 @@ async def add_to_db(
         )
         return {"message": "Question added successfully"}
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=400, detail=str(e))
+async def add_all_to_db(questions: list[Question]):
+    try:
+        await MongoDBAdapter.add_all_questions([q.dict() for q in questions])
+        return {"message": "All questions added successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
     

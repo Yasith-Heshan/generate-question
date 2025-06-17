@@ -74,3 +74,14 @@ class MongoDBAdapter:
         except Exception as e:
             print(f"Error inserting question: {e}")
             raise e
+        
+    @classmethod
+    async def add_all_questions(cls, questions: List[Dict[str, Any]]) -> None:
+        if not questions:
+            return
+        
+        try:
+            await cls.get_db()["questions"].insert_many(questions)
+        except Exception as e:
+            print(f"Error inserting multiple questions: {e}")
+            raise e

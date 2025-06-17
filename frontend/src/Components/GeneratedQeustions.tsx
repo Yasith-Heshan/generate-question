@@ -73,6 +73,7 @@ const GeneratedQuestions = ({
                   mcqAnswers: mcqAnswers
                     ? mcqAnswers[index].split(",")
                     : undefined,
+                  index: index,
                 });
               }}
             >
