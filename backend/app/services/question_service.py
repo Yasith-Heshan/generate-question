@@ -123,3 +123,14 @@ async def add_all_to_db(questions: list[Question]):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
+async def filter_questions_from_db(questionFilterRequestBody: QuestionGenerateRequestBody):
+    try:
+        questions = await MongoDBAdapter.filter_questions(
+            section=questionFilterRequestBody.section,
+            question_type=questionFilterRequestBody.questionType,
+            difficulty=questionFilterRequestBody.difficulty
+        )
+        return questions
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    

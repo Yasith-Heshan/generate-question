@@ -23,3 +23,10 @@ class Question(BaseModel):
     question: str
     correctAnswer: str
     mcqAnswers: Optional[List[str]] = []
+    
+class QuestionFilterRequestBody(BaseModel):
+    section:Optional[str] = None
+    questionType: Optional[str] = None
+    difficulty: Optional[int] = None
+    
+    
