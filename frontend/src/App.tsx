@@ -1,14 +1,17 @@
-import { QuestionGeneratePage } from "./pages/QuestionGeneratePage";
 import AppBar from "./Components/AppBar";
 import { ToastContainer } from "react-toastify";
 import FilterQuestionsPage from "./pages/FilterQuestionsPage";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { QuestionGeneratePage } from "./pages/QuestionGeneratePage";
 
 function App() {
   return (
     <>
       <AppBar />
-      {/* <QuestionGeneratePage /> */}
-      <FilterQuestionsPage />
+      <Routes>
+        <Route path="/" element={<QuestionGeneratePage />} />
+        <Route path="/view" element={<FilterQuestionsPage />} />
+      </Routes>
       <ToastContainer
         position="top-right"
         autoClose={5000}

@@ -13,9 +13,14 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
+import { Link } from "react-router-dom";
 
 const drawerWidth = 240;
-const navItems = ["OpenAI Gen", "Simpy Gen", "View"];
+const navItems = [
+  { name: "OpenAI Gen", path: "/" },
+  { name: "Simpy Gen", path: "/simpy" },
+  { name: "View", path: "/view" },
+];
 
 export default function DrawerAppBar() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -31,11 +36,13 @@ export default function DrawerAppBar() {
       </Typography>
       <Divider />
       <List>
-        {navItems.map((item) => (
-          <ListItem key={item} disablePadding>
-            <ListItemButton sx={{ textAlign: "center" }}>
-              <ListItemText primary={item} />
-            </ListItemButton>
+        {navItems.map((item, index) => (
+          <ListItem key={index} disablePadding>
+            <Link to={item.path} style={{ textDecoration: "none", color: "inherit" }}>
+              <ListItemButton sx={{ textAlign: "center" }}>
+                <ListItemText primary={item.name} />
+              </ListItemButton>
+            </Link>
           </ListItem>
         ))}
       </List>
@@ -61,13 +68,20 @@ export default function DrawerAppBar() {
             component="div"
             sx={{ flexGrow: 1, display: { xs: "none", sm: "block" } }}
           >
-            MUI
+            MATHSUP
           </Typography>
           <Box sx={{ display: { xs: "none", sm: "block" } }}>
-            {navItems.map((item) => (
-              <Button key={item} sx={{ color: "#fff" }}>
-                {item}
-              </Button>
+            {navItems.map((item, index) => (
+
+              <Link
+                to={item.path}
+                key={index}
+                style={{ textDecoration: "none", color: "#fff" }}
+              >
+                <Button key={index} sx={{ color: "#fff" }}>
+                  {item.name}
+                </Button>
+              </Link>
             ))}
           </Box>
         </Toolbar>
