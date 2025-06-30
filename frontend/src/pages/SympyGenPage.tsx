@@ -4,32 +4,33 @@ import {
   TextField,
   Button,
   Stack,
-  TextareaAutosize,
   CircularProgress,
+  Checkbox
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { useState } from "react";
 import GeneratedQuestions from "../Components/GeneratedQeustions";
 import type {
   GeneratedQuestionInfo,
-  QuestionGenerationRequestBody,
   QuestionSaveRequestBody,
+  SympyGeneratorRequestBody,
+  SympyGeneratorResponseItem,
 } from "../utils/interface";
 import {
   generateQuestion,
-  saveAllQuestions,
-  saveQuestion,
-} from "../api/openAiService";
+} from "../api/sympyService";
 import { toast } from "react-toastify";
+import { saveQuestion, saveAllQuestions } from "../api/openAiService";
+import { CheckBox } from "@mui/icons-material";
 
-export const QuestionGeneratePage = () => {
-  const [form, setForm] = useState<QuestionGenerationRequestBody>({
+export const SympyGeneratePage = () => {
+  const [form, setForm] = useState<SympyGeneratorRequestBody>({
     section: "",
-    description: "",
-    count: 1,
-    questionType: "",
+    question_type: "",
     difficulty: 1,
-  });
+    questions_count: 1,
+    mcq: false,
+  })
 
   const [questions, setQuestions] = useState<string[]>([]);
   const [correctAnswers, setCorrectAnswers] = useState<string[]>([]);
@@ -43,8 +44,18 @@ export const QuestionGeneratePage = () => {
     setForm((prev) => ({
       ...prev,
       [name as string]:
-        name === "count" || name === "difficulty" ? Number(value) : value,
+        name === "questions_count" || name === "difficulty" ? Number(value) : value,
     }));
+  };
+
+  const formatAnswer = (answer: string): string => {
+    return answer.replace(/\$([^$]+)\$/g, (_, expr) => `$$${expr}$$`)
+  }
+
+  const formatMcqAnswers = (answers: string[]): string[] => {
+    return answers.map((answer) =>
+      formatAnswer(answer)
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,9 +65,20 @@ export const QuestionGeneratePage = () => {
       clearState();
       setIsGenerating(true);
       const response = await generateQuestion(form);
-      setQuestions(response.data.questions);
-      setCorrectAnswers(response.data.correctAnswers);
-      setMcqAnswers(response.data.mcqAnswers);
+      let questions: string[] = [];
+      let correctAnswers: string[] = [];
+      let mcqAnswers: string[] = [];
+      response.data.forEach((item: SympyGeneratorResponseItem) => {
+        questions.push(item.question);
+        correctAnswers.push(formatAnswer(item.correct_solution));
+        if (form.mcq) {
+          mcqAnswers.push(formatMcqAnswers(item.other_solutions).join(","));
+        }
+
+      });
+      setQuestions(questions);
+      setCorrectAnswers(correctAnswers);
+      setMcqAnswers(mcqAnswers);
     } catch (error) {
       console.error("Error generating questions:", error);
       toast.error("Failed to generate questions. Please try again.");
@@ -84,7 +106,7 @@ export const QuestionGeneratePage = () => {
       await saveQuestion({
         ...generatedQuestionInfo,
         section: form.section,
-        questionType: form.questionType,
+        questionType: form.question_type,
         difficulty: form.difficulty,
       } as QuestionSaveRequestBody);
       removeAddedQuestion(generatedQuestionInfo.index);
@@ -100,7 +122,7 @@ export const QuestionGeneratePage = () => {
       (question, index) =>
       ({
         section: form.section,
-        questionType: form.questionType,
+        questionType: form.question_type,
         difficulty: form.difficulty,
         question: question,
         correctAnswer: correctAnswers[index],
@@ -140,9 +162,9 @@ export const QuestionGeneratePage = () => {
 
             <TextField
               label="Question Type"
-              name="questionType"
+              name="question_type"
               type="text"
-              value={form.questionType}
+              value={form.question_type}
               onChange={handleChange}
               fullWidth
               required
@@ -155,34 +177,34 @@ export const QuestionGeneratePage = () => {
               value={form.difficulty}
               onChange={handleChange}
               fullWidth
+              inputProps={{ min: 1, max: 5 }}
               required
             />
             <TextField
               label="Count"
-              name="count"
+              name="questions_count"
               type="number"
-              value={form.count}
+              value={form.questions_count}
               onChange={handleChange}
               fullWidth
               required
             />
-            <TextareaAutosize
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              style={{ width: "100%" }}
-              minRows={3}
-              placeholder="Description"
-              required
-            />
-            <TextareaAutosize
-              name="exampleQuestion"
-              value={form.exampleQuestion}
-              onChange={handleChange}
-              style={{ width: "100%" }}
-              minRows={3}
-              placeholder="Example Question (optional)"
-            />
+
+            <Box display="flex" alignItems="center">
+              <Checkbox
+                name="mcq"
+                checked={form.mcq}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    mcq: e.target.checked,
+                  }))
+                }
+              />
+              <label>Generate MCQ</label>
+            </Box>
+
+
             <Button type="submit" variant="contained">
               Generate
             </Button>

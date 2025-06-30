@@ -7,6 +7,7 @@ class QuestionGenerateRequestBody(BaseModel):
     difficulty: int
     description: str
     count: int
+    exampleQuestion: Optional[str] = None  # Optional field for an example question
     
 class QuestionResponseBody(BaseModel):
     questions: List[str]

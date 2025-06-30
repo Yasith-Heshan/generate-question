@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.v1.routes import router as api_router
+from app.api.v1.question_controller import questionController
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -21,4 +21,4 @@ app.add_middleware(
     allow_headers=["*"],               # allow all headers
 )
 
-app.include_router(api_router, prefix="/api/v1")
+app.include_router(questionController, prefix="/api/v1")

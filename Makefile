@@ -1,9 +1,9 @@
 .PHONY: up down
 
-up:
+run:
 	docker-compose up -d
 
-down:
+stop:
 	docker-compose down
 
 make restart:
@@ -13,6 +13,9 @@ logs:
 
 build:
 	docker-compose build
+
+clean:
+	docker-compose down --rmi all --volumes --remove-orphans
 
 pull:
 	git pull

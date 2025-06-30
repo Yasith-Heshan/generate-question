@@ -2,10 +2,11 @@ version: "3.8"
 
 services:
   backend:
+    container_name: generate-question-backend
     build:
       context: ./backend
     ports:
-      - "8000:8000"
+      - "8080:8080"
     volumes:
       - ./backend:/app
       - /app/venv
@@ -13,6 +14,7 @@ services:
       - PYTHONUNBUFFERED=1
 
   frontend:
+    container_name: generate-question-frontend
     build:
       context: ./frontend
     ports:

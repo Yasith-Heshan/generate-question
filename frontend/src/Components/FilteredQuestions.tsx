@@ -1,5 +1,4 @@
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import { MathJaxContext, MathJax } from "better-react-mathjax";
 import type { QuestionFilterResponseItem } from "../utils/interface";
 
@@ -37,6 +36,20 @@ const FilteredQuestions = ({
             }}
           >
             <MathJaxContext config={config}>
+              <h3>
+                {" "}
+                <MathJax inline>
+                  {" "}
+                  {`Section: ${filteredQuestionResponseItems[index].section}`}
+                </MathJax>
+              </h3>
+              <h3>
+                {" "}
+                <MathJax inline>
+                  {" "}
+                  {`Question Type: ${filteredQuestionResponseItems[index].questionType}`}
+                </MathJax>
+              </h3>
               <h3>
                 {" "}
                 <MathJax inline>

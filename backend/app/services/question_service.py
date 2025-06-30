@@ -53,13 +53,14 @@ def extract_mcq_answers(text):
     return [a.strip() for a in matches]
 
 
-def generate_math_word_problem(question_description,count=1):
+def generate_math_word_problem(question_description,count=1,example_question=None):
     
     # Define the math prompt
     math_problem_count = "a math problem" if count == 1 else f"{count} math problems"
     math_prompt = f"""
     Create {math_problem_count} according to the following description:
     {question_description}
+    {"Example question: " + example_question if example_question else ""}
     Give only the question, answer and suitable 4 mcq asnwers other than the correct answer.
     MCQ answers should be in the format: MCQ_Answers: [<mcq_answer1>, <mcq_answer2>, <mcq_answer3>, <mcq_answer4>]
     Use different letters for the variable: x, y, t, u, v, z, r, s (choose the variable randomly) and f, g, h, p, q, r for the function names.
@@ -90,16 +91,20 @@ def createQuestion(requestBody: QuestionGenerateRequestBody) -> QuestionResponse
     section = requestBody.section
     questionType = requestBody.questionType
     difficulty = requestBody.difficulty
-    questions, answers, mcq_answers = generate_math_word_problem(description, count)
-    questionResponse = QuestionResponseBody(
-        questions=questions,
-        correctAnswers=answers,
-        mcqAnswers=mcq_answers,
-        section=section,
-        questionType=questionType,
-        difficulty=difficulty
-    )
-    return questionResponse
+    try:
+        questions, answers, mcq_answers = generate_math_word_problem(description, count, requestBody.exampleQuestion)
+        questionResponse = QuestionResponseBody(
+            questions=questions,
+            correctAnswers=answers,
+            mcqAnswers=mcq_answers,
+            section=section,
+            questionType=questionType,
+            difficulty=difficulty
+        )
+        return questionResponse
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
     
 async def add_to_db(
     question: Question

@@ -18,7 +18,7 @@ import { Link } from "react-router-dom";
 const drawerWidth = 240;
 const navItems = [
   { name: "OpenAI Gen", path: "/" },
-  { name: "Simpy Gen", path: "/simpy" },
+  { name: "Simpy Gen", path: "/sympy" },
   { name: "View", path: "/view" },
 ];
 
