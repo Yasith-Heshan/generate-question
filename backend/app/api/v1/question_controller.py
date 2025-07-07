@@ -1,6 +1,5 @@
 from fastapi import APIRouter
-from app.services.user_service import create_user
-from app.services.question_service import createQuestion,add_to_db, add_all_to_db, filter_questions_from_db
+from app.services.question_service import createQuestion,add_to_db, add_all_to_db, filter_questions_from_db, get_all_sections_from_db, get_all_question_types_from_db
 from app.schemas.question import QuestionGenerateRequestBody, QuestionResponseBody, Question, QuestionFilterRequestBody
 from typing import  List
 
@@ -21,4 +20,11 @@ async def add_all_questions_to_db(questions: List[Question]):
 @questionController.post("/filter_questions", response_model=List[Question])
 async def filter_questions(questionFilterRequestBody: QuestionFilterRequestBody):
     return await filter_questions_from_db(questionFilterRequestBody)
-    
+
+@questionController.get("/sections", response_model=List[str])
+async def get_all_sections():
+    return await get_all_sections_from_db()
+
+@questionController.get("/question_types", response_model=List[str])
+async def get_all_question_types():
+    return await get_all_question_types_from_db()

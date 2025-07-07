@@ -220,7 +220,7 @@ export const SympyGeneratePage = () => {
           )}
           <Box
             sx={{
-              height: "80vh",
+              height: "70vh",
               overflowY: "auto",
             }}
           >

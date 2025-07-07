@@ -99,3 +99,15 @@ class MongoDBAdapter:
             query["difficulty"] = difficulty
         
         return await cls.find_all("questions", query)
+    
+    @classmethod
+    async def get_all_sections(cls) -> List[str]:
+        db = cls.get_db()
+        sections = await db["questions"].distinct("section")
+        return sections
+    
+    @classmethod
+    async def get_all_question_types(cls) -> List[str]:
+        db = cls.get_db()
+        question_types = await db["questions"].distinct("questionType")
+        return question_types

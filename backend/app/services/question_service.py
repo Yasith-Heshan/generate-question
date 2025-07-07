@@ -139,3 +139,17 @@ async def filter_questions_from_db(questionFilterRequestBody: QuestionGenerateRe
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
+async def get_all_sections_from_db():
+    try:
+        sections = await MongoDBAdapter.get_all_sections()
+        return sections
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+async def get_all_question_types_from_db():
+    try:
+        question_types = await MongoDBAdapter.get_all_question_types()
+        return question_types
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    

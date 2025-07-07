@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Box from "@mui/material/Box";
 import {
     TextField,
@@ -6,14 +6,14 @@ import {
     Stack,
     TextareaAutosize,
     CircularProgress,
+    MenuItem,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { useState } from "react";
-import GeneratedQuestions from "../Components/GeneratedQeustions";
-import { toast } from "react-toastify";
 import type { QuestionFilterRequestBody, QuestionFilterResponseItem } from "../utils/interface";
-import { filterQuestions } from "../api/openAiService";
+import { filterQuestions, getAllQuestionTypes, getAllSections } from "../api/openAiService";
 import FilteredQuestions from "../Components/FilteredQuestions";
+import { toast } from "react-toastify";
 
 const FilterQuestionsPage = () => {
     const [form, setForm] = useState<QuestionFilterRequestBody>({
@@ -23,9 +23,28 @@ const FilterQuestionsPage = () => {
     });
 
     const [filteredQuestions, setFiltedQuestions] = useState<QuestionFilterResponseItem[]>([]);
-    const [correctAnswers, setCorrectAnswers] = useState<string[]>([]);
-    const [mcqAnswers, setMcqAnswers] = useState<string[]>([]);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [sections, setSections] = useState<string[]>([]);
+    const [questionTypes, setQuestionTypes] = useState<string[]>([]);
+
+    useEffect(() => {
+        const fetchSectionsAndTypes = async () => {
+            try {
+                const sectionsResponse = await getAllSections();
+                setSections(sectionsResponse.data);
+
+                const typesResponse = await getAllQuestionTypes();
+                setQuestionTypes(typesResponse.data);
+            } catch (error) {
+                toast.error("Failed to fetch sections or question types. Please try again.");
+            }
+        };
+
+        fetchSectionsAndTypes();
+    }, []);
+
+
+
 
 
     const handleChange = (
@@ -75,12 +94,19 @@ const FilterQuestionsPage = () => {
                 >
                     <Stack component="form" spacing={2} onSubmit={handleSubmit}>
                         <TextField
+                            select
                             label="Section"
                             name="section"
                             value={form.section}
                             onChange={handleChange}
                             fullWidth
-                        />
+                        >
+                            {sections.map((section) => (
+                                <MenuItem key={section} value={section}>
+                                    {section}
+                                </MenuItem>
+                            ))}
+                        </TextField>
 
                         <TextField
                             label="Question Type"
@@ -89,16 +115,29 @@ const FilterQuestionsPage = () => {
                             value={form.questionType}
                             onChange={handleChange}
                             fullWidth
-                        />
+                            select
+                        >
+                            {questionTypes.map((type) => (
+                                <MenuItem key={type} value={type}>
+                                    {type}
+                                </MenuItem>
+                            ))}
+                        </TextField>
 
                         <TextField
                             label="Difficulty"
                             name="difficulty"
-                            type="number"
                             value={form.difficulty}
                             onChange={handleChange}
                             fullWidth
-                        />
+                            select
+                        >
+                            {[1, 2, 3, 4, 5].map((difficulty) => (
+                                <MenuItem key={difficulty} value={difficulty}>
+                                    {difficulty}
+                                </MenuItem>
+                            ))}
+                        </TextField>
 
                         <Button type="submit" variant="contained">
                             Filter

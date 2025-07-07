@@ -198,7 +198,7 @@ export const QuestionGeneratePage = () => {
           )}
           <Box
             sx={{
-              height: "80vh",
+              height: "70vh",
               overflowY: "auto",
             }}
           >

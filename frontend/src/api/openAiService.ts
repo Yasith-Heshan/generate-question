@@ -28,3 +28,11 @@ export const filterQuestions = async (
 ) => {
   return await axios.post("/api/v1/filter_questions", questionFilterRequestBody);
 }
+
+export const getAllSections = async () => {
+  return await axios.get("/api/v1/sections");
+}
+
+export const getAllQuestionTypes = async () => {
+  return await axios.get("/api/v1/question_types");
+}
