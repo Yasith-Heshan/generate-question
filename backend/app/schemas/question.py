@@ -7,10 +7,12 @@ class QuestionGenerateRequestBody(BaseModel):
     difficulty: int
     description: str
     count: int
+    detailedAnswer: Optional[bool] = False  # Optional field to indicate if detailed answer is required
     exampleQuestion: Optional[str] = None  # Optional field for an example question
     
 class QuestionResponseBody(BaseModel):
     questions: List[str]
+    detailedAnswers: Optional[List[str]] = None  # Optional field for detailed answer
     correctAnswers: List[str]
     mcqAnswers: Optional[List[str]]=[]
     section: str

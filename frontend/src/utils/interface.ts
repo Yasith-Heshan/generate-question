@@ -4,6 +4,7 @@ export interface QuestionGenerationRequestBody {
   difficulty: number;
   count: number;
   description: string;
+  detailedAnswer: boolean;
   exampleQuestion?: string;
 }
 

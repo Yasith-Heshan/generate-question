@@ -5,6 +5,7 @@ import type { GeneratedQuestionInfo } from "../utils/interface";
 
 interface GeneratedQuestionsProps {
   questions: string[];
+  detailedAnswers?: string[];
   correctAnswers: string[];
   mcqAnswers?: string[];
   onAddToDB: (generatedQuestionInfo: GeneratedQuestionInfo) => void;
@@ -12,6 +13,7 @@ interface GeneratedQuestionsProps {
 
 const GeneratedQuestions = ({
   questions,
+  detailedAnswers,
   correctAnswers,
   mcqAnswers,
   onAddToDB,
@@ -49,10 +51,15 @@ const GeneratedQuestions = ({
                   {`Question ${index + 1}: ${questions[index]}`}
                 </MathJax>
               </h3>
+              <h5>
+                {"Detailed Answer: \n"}
+                {detailedAnswers && detailedAnswers[index]
+                  ? <MathJax inline>{detailedAnswers[index]}</MathJax>
+                  : "Not provided"}
+              </h5>
               <h4>
-                <MathJax inline>{`Correct Answer: ${
-                  correctAnswers[index] ?? ""
-                }`}</MathJax>
+                <MathJax inline>{`Correct Answer: ${correctAnswers[index] ?? ""
+                  }`}</MathJax>
               </h4>
               {mcqAnswers && mcqAnswers[index] && (
                 <h4>

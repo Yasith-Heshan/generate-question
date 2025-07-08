@@ -6,6 +6,7 @@ import {
   Stack,
   TextareaAutosize,
   CircularProgress,
+  Switch
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { useState } from "react";
@@ -29,10 +30,12 @@ export const QuestionGeneratePage = () => {
     count: 1,
     questionType: "",
     difficulty: 1,
+    detailedAnswer: false,
   });
 
   const [questions, setQuestions] = useState<string[]>([]);
   const [correctAnswers, setCorrectAnswers] = useState<string[]>([]);
+  const [detailedAnswers, setDetailedAnswers] = useState<string[]>([]);
   const [mcqAnswers, setMcqAnswers] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -54,8 +57,11 @@ export const QuestionGeneratePage = () => {
       clearState();
       setIsGenerating(true);
       const response = await generateQuestion(form);
+      console.log("Response from API:", response);
+
       setQuestions(response.data.questions);
       setCorrectAnswers(response.data.correctAnswers);
+      setDetailedAnswers(response.data.detailedAnswers || []);
       setMcqAnswers(response.data.mcqAnswers);
     } catch (error) {
       console.error("Error generating questions:", error);
@@ -175,6 +181,20 @@ export const QuestionGeneratePage = () => {
               placeholder="Description"
               required
             />
+            <Switch
+              name="detailedAnswer"
+              checked={form.detailedAnswer || false}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  detailedAnswer: e.target.checked,
+                }))
+              }
+              color="primary"
+            />
+            <label htmlFor="detailedAnswer">Detailed Answer</label>
+            <br />
+
             <TextareaAutosize
               name="exampleQuestion"
               value={form.exampleQuestion}
@@ -204,6 +224,7 @@ export const QuestionGeneratePage = () => {
           >
             <GeneratedQuestions
               questions={questions}
+              detailedAnswers={detailedAnswers}
               correctAnswers={correctAnswers}
               mcqAnswers={mcqAnswers}
               onAddToDB={handleAddToDB}

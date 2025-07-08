@@ -30,6 +30,19 @@ def extract_questions(text):
     # Strip whitespace from each question
     return [q.strip() for q in matches]
 
+def get_detailed_answers(questions: list[str]):
+    """
+    generates detailed answers for a list of questions using the OpenAI API."""
+    detailed_answers = []
+    for question in questions:
+        prompt = f"Provide a detailed answer for the following question:\n{question}"
+        response = client.responses.create(
+            model="gpt-4.1",
+            input=prompt,
+        )
+        detailed_answers.append(response.output_text.strip())
+    return detailed_answers if detailed_answers else []
+
 def extract_answers(text):
     """
     Extracts all answers from the given text that follow the format:
@@ -67,6 +80,7 @@ def generate_math_word_problem(question_description,count=1,example_question=Non
     Make sure that they do not evaluate to negative square roots, logs of negative numbers, etc.
     Always use latex for math expressions (Use \\left( and  \\right) for parenthesis). Use the format:
     Question: <question>
+    Detailed_Answer: <detailed_answer> (if detailed_answer is True)
     Answer: <answer>
     MCQ_Answers: <mcq_answers_list>\\n
     """
@@ -76,8 +90,10 @@ def generate_math_word_problem(question_description,count=1,example_question=Non
         # reasoning={"effort": "medium"},
         input=math_prompt,
     )
+    
     # extract the generated question from the response
     questions = extract_questions(response.output_text)
+    detailed_answers_str = []
     answers = extract_answers(response.output_text)
     mcq_answers = extract_mcq_answers(response.output_text)
     return questions,answers, mcq_answers
@@ -88,13 +104,16 @@ def generate_math_word_problem(question_description,count=1,example_question=Non
 def createQuestion(requestBody: QuestionGenerateRequestBody) -> QuestionResponseBody:
     description = requestBody.description
     count = requestBody.count
+    detailed_Answer = requestBody.detailedAnswer
     section = requestBody.section
     questionType = requestBody.questionType
     difficulty = requestBody.difficulty
     try:
         questions, answers, mcq_answers = generate_math_word_problem(description, count, requestBody.exampleQuestion)
+        detailed_answers = get_detailed_answers(questions) if detailed_Answer else []
         questionResponse = QuestionResponseBody(
             questions=questions,
+            detailedAnswers=detailed_answers if detailed_Answer else None,
             correctAnswers=answers,
             mcqAnswers=mcq_answers,
             section=section,
