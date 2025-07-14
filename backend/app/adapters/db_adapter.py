@@ -85,29 +85,3 @@ class MongoDBAdapter:
         except Exception as e:
             print(f"Error inserting multiple questions: {e}")
             raise e
-        
-    @classmethod
-    async def filter_questions(cls, section: Optional[str] = None, 
-                               question_type: Optional[str] = None, 
-                               difficulty: Optional[int] = None) -> List[Dict[str, Any]]:
-        query = {}
-        if section:
-            query["section"] = section
-        if question_type:
-            query["questionType"] = question_type
-        if difficulty is not None:
-            query["difficulty"] = difficulty
-        
-        return await cls.find_all("questions", query)
-    
-    @classmethod
-    async def get_all_sections(cls) -> List[str]:
-        db = cls.get_db()
-        sections = await db["questions"].distinct("section")
-        return sections
-    
-    @classmethod
-    async def get_all_question_types(cls) -> List[str]:
-        db = cls.get_db()
-        question_types = await db["questions"].distinct("questionType")
-        return question_types

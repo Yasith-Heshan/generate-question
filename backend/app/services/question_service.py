@@ -1,15 +1,14 @@
-from app.schemas.question import QuestionGenerateRequestBody, QuestionResponseBody, Question
+from app.schemas.question import QuestionGenerateRequestBody, QuestionResponseBody,Question
 import openai
 from dotenv import load_dotenv
 import os
 import re
-from app.adapters.db_adapter import MongoDBAdapter
 from fastapi import HTTPException
+from app.models.question_model import QuestionModel
 
 
 # Load environment variables from .env file
 load_dotenv()
-MongoDBAdapter.connect()
 
 
 # Get API key from environment variable
@@ -93,7 +92,6 @@ def generate_math_word_problem(question_description,count=1,example_question=Non
     
     # extract the generated question from the response
     questions = extract_questions(response.output_text)
-    detailed_answers_str = []
     answers = extract_answers(response.output_text)
     mcq_answers = extract_mcq_answers(response.output_text)
     return questions,answers, mcq_answers
@@ -129,45 +127,43 @@ async def add_to_db(
     question: Question
 ):
     try:
-        await MongoDBAdapter.add_question(
-            section=question.section,
-            question_type=question.questionType,
-            difficulty=question.difficulty,
-            question=question.question,
-            correctAnswer=question.correctAnswer,
-            mcqAnswers=question.mcqAnswers
-        )
+        doc= QuestionModel(**question.dict())
+        await doc.insert()
         return {"message": "Question added successfully"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 async def add_all_to_db(questions: list[Question]):
     try:
-        await MongoDBAdapter.add_all_questions([q.dict() for q in questions])
+        await QuestionModel.insert_many([QuestionModel(**q.dict()) for q in questions])
         return {"message": "All questions added successfully"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
 async def filter_questions_from_db(questionFilterRequestBody: QuestionGenerateRequestBody):
     try:
-        questions = await MongoDBAdapter.filter_questions(
-            section=questionFilterRequestBody.section,
-            question_type=questionFilterRequestBody.questionType,
-            difficulty=questionFilterRequestBody.difficulty
-        )
+        filters = {}
+
+        if questionFilterRequestBody.section:
+            filters["section"] = questionFilterRequestBody.section
+        if questionFilterRequestBody.questionType:
+            filters["questionType"] = questionFilterRequestBody.questionType
+        if questionFilterRequestBody.difficulty is not None:
+            filters["difficulty"] = questionFilterRequestBody.difficulty
+        questions = await QuestionModel.find(filters).to_list()
         return questions
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
 async def get_all_sections_from_db():
     try:
-        sections = await MongoDBAdapter.get_all_sections()
+        sections = await QuestionModel.get_motor_collection().distinct("section")
         return sections
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
 async def get_all_question_types_from_db():
     try:
-        question_types = await MongoDBAdapter.get_all_question_types()
+        question_types = await QuestionModel.get_motor_collection().distinct("questionType")
         return question_types
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

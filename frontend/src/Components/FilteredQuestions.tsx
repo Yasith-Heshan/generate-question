@@ -58,6 +58,10 @@ const FilteredQuestions = ({
                 </MathJax>
               </h3>
               <h4>
+                <MathJax inline>{`Detailed Answer: ${filteredQuestionResponseItems[index].detailedAnswer ?? "Not provided"
+                  }`}</MathJax>
+              </h4>
+              <h4>
                 <MathJax inline>{`Correct Answer: ${filteredQuestionResponseItems[index].correctAnswer ?? ""
                   }`}</MathJax>
               </h4>

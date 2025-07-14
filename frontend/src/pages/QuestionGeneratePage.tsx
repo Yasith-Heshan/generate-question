@@ -137,6 +137,9 @@ export const QuestionGeneratePage = () => {
         questionType: form.questionType,
         difficulty: form.difficulty,
         question: question,
+        detailedAnswer: detailedAnswers
+          ? detailedAnswers[index]
+          : undefined,
         correctAnswer: correctAnswers[index],
         mcqAnswers: mcqAnswers[index].split(",") || [],
       } as QuestionSaveRequestBody)

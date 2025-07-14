@@ -25,6 +25,7 @@ class Question(BaseModel):
     difficulty: int
     question: str
     correctAnswer: str
+    detailedAnswer: Optional[str] = None
     mcqAnswers: Optional[List[str]] = []
     
 class QuestionFilterRequestBody(BaseModel):

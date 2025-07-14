@@ -77,6 +77,9 @@ const GeneratedQuestions = ({
                 onAddToDB({
                   question: questions[index],
                   correctAnswer: correctAnswers[index],
+                  detailedAnswer: detailedAnswers
+                    ? detailedAnswers[index]
+                    : undefined,
                   mcqAnswers: mcqAnswers
                     ? mcqAnswers[index].split(",")
                     : undefined,

@@ -1,11 +1,16 @@
 from fastapi import FastAPI
 from app.api.v1.question_controller import questionController
 from fastapi.middleware.cors import CORSMiddleware
+from app.core.database import init_db
 
 
 
 app = FastAPI(title="Simple FastAPI App")
 
+@app.on_event("startup")
+async def start_db():
+    await init_db()
+    print("MongoDB connection established.")
 
 
 origins = [

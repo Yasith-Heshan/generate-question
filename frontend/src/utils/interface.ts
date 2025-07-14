@@ -20,6 +20,7 @@ export interface QuestionSaveRequestBody {
 export interface GeneratedQuestionInfo {
   question: string;
   correctAnswer: string;
+  detailedAnswer?: string;
   mcqAnswers?: string[];
   index: number;
 }
@@ -35,6 +36,7 @@ export interface QuestionFilterResponseItem {
   questionType: string;
   difficulty: number;
   question: string;
+  detailedAnswer?: string;
   correctAnswer: string;
   mcqAnswers?: string[];
 }
