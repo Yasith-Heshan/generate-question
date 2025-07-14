@@ -22,6 +22,8 @@ import {
   saveQuestion,
 } from "../api/openAiService";
 import { toast } from "react-toastify";
+import { FileUploader } from "react-drag-drop-files";
+import { Height } from "@mui/icons-material";
 
 export const QuestionGeneratePage = () => {
   const [form, setForm] = useState<QuestionGenerationRequestBody>({
@@ -38,6 +40,30 @@ export const QuestionGeneratePage = () => {
   const [detailedAnswers, setDetailedAnswers] = useState<string[]>([]);
   const [mcqAnswers, setMcqAnswers] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [file, setFile] = useState<File | null>(null)
+
+  const fileTypes = ["JPG", "PNG", "GIF"];
+
+  // convert file into base64 string
+  const convertFileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleFileChange = async (file: File) => {
+    setFile(file);
+    const base64String = await convertFileToBase64(file);
+    console.log("Selected file:", base64String);
+    const description = `Read the following image and generate questions based on it.: ${base64String}`;
+    setForm({
+      ...form, description,
+    })
+  }
+
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>
@@ -76,6 +102,8 @@ export const QuestionGeneratePage = () => {
     setCorrectAnswers((prev) => prev.filter((_, i) => i !== index));
     setMcqAnswers((prev) => prev.filter((_, i) => i !== index));
   };
+
+
 
   const clearState = () => {
     setQuestions([]);
@@ -178,22 +206,48 @@ export const QuestionGeneratePage = () => {
               onChange={handleChange}
               style={{ width: "100%" }}
               minRows={3}
+              maxRows={5}
               placeholder="Description"
               required
             />
-            <Switch
-              name="detailedAnswer"
-              checked={form.detailedAnswer || false}
-              onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  detailedAnswer: e.target.checked,
-                }))
+
+            <FileUploader
+              handleChange={handleFileChange}
+              name="image"
+              types={fileTypes}
+              multiple={false}
+              children={
+                <Box
+                  sx={{
+                    border: "1px dashed #ccc",
+                    padding: 2,
+                    textAlign: "center",
+                    cursor: "pointer",
+                  }}
+                >
+                  {file ? (
+                    <p>{file.name}</p>
+                  ) : (
+                    <p>Drag and drop an image file here, or click to select</p>
+                  )}
+                </Box>
               }
-              color="primary"
             />
-            <label htmlFor="detailedAnswer">Detailed Answer</label>
-            <br />
+
+            <Stack direction="row" alignItems="center">
+              <Switch
+                name="detailedAnswer"
+                checked={form.detailedAnswer || false}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    detailedAnswer: e.target.checked,
+                  }))
+                }
+                color="primary"
+              />
+              <label htmlFor="detailedAnswer">Detailed Answer</label>
+            </Stack>
 
             <TextareaAutosize
               name="exampleQuestion"
