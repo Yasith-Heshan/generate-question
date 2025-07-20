@@ -65,7 +65,7 @@ def extract_mcq_answers(text):
     return [a.strip() for a in matches]
 
 
-def generate_math_word_problem(question_description,count=1,example_question=None, image=None):
+def generate_math_word_problem(question_description,count=1,example_question=None, image=None, prevResponseId=None):
     imageToText = ""
     if image:
         imageToText = readContentFromImage(image)
@@ -78,6 +78,7 @@ def generate_math_word_problem(question_description,count=1,example_question=Non
     {question_description}
     {imageToText if image else ""}
     {"Example question: " + example_question if example_question else ""}
+    {"Generate question in the same format as the previous response." if prevResponseId else ""}
     Give only the question, answer and suitable 4 mcq asnwers other than the correct answer.
     MCQ answers should be in the format: MCQ_Answers: [<mcq_answer1>, <mcq_answer2>, <mcq_answer3>, <mcq_answer4>]
     Use different letters for the variable: x, y, t, u, v, z, r, s (choose the variable randomly) and f, g, h, p, q, r for the function names.
@@ -93,13 +94,15 @@ def generate_math_word_problem(question_description,count=1,example_question=Non
         model="gpt-4.1",
         # reasoning={"effort": "medium"},
         input=math_prompt,
+        previous_response_id=prevResponseId,  # Use the previous response ID if provided
     )
+    
     
     # extract the generated question from the response
     questions = extract_questions(response.output_text)
     answers = extract_answers(response.output_text)
     mcq_answers = extract_mcq_answers(response.output_text)
-    return questions,answers, mcq_answers
+    return questions,answers, mcq_answers, response.id
 
 def readContentFromImage(imageBase64: str) -> str:
     """
@@ -152,7 +155,7 @@ def createQuestion(requestBody: QuestionGenerateRequestBody) -> QuestionResponse
     questionType = requestBody.questionType
     difficulty = requestBody.difficulty
     try:
-        questions, answers, mcq_answers = generate_math_word_problem(description, count, requestBody.exampleQuestion,requestBody.image)
+        questions, answers, mcq_answers,responseId = generate_math_word_problem(description, count, requestBody.exampleQuestion,requestBody.image,requestBody.prevResponseId)
         detailed_answers = get_detailed_answers(questions) if detailed_Answer else []
         questionResponse = QuestionResponseBody(
             questions=questions,
@@ -161,7 +164,8 @@ def createQuestion(requestBody: QuestionGenerateRequestBody) -> QuestionResponse
             mcqAnswers=mcq_answers,
             section=section,
             questionType=questionType,
-            difficulty=difficulty
+            difficulty=difficulty,
+            responseId=responseId
         )
         return questionResponse
     except Exception as e:

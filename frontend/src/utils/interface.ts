@@ -7,6 +7,7 @@ export interface QuestionGenerationRequestBody {
   detailedAnswer: boolean;
   exampleQuestion?: string;
   image?: string; // Optional field for image content
+  prevResponseId?: string; // Optional field for response ID
 }
 
 export interface QuestionSaveRequestBody {

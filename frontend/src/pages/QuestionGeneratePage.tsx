@@ -41,6 +41,7 @@ export const QuestionGeneratePage = () => {
   const [mcqAnswers, setMcqAnswers] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [file, setFile] = useState<File | null>(null)
+  const [prevResponseId, setPrevResponseId] = useState<string>("");
 
   const fileTypes = ["JPG", "PNG", "GIF"];
 
@@ -85,12 +86,13 @@ export const QuestionGeneratePage = () => {
       clearState();
       setIsGenerating(true);
       const response = await generateQuestion(form);
-      console.log("Response from API:", response);
 
       setQuestions(response.data.questions);
       setCorrectAnswers(response.data.correctAnswers);
       setDetailedAnswers(response.data.detailedAnswers || []);
       setMcqAnswers(response.data.mcqAnswers);
+      setPrevResponseId(response.data.responseId || "");
+
     } catch (error) {
       console.error("Error generating questions:", error);
       toast.error("Failed to generate questions. Please try again.");
@@ -262,9 +264,23 @@ export const QuestionGeneratePage = () => {
               minRows={3}
               placeholder="Example Question (optional)"
             />
-            <Button type="submit" variant="contained">
-              Generate
-            </Button>
+            <Stack direction="row" justifyContent="center" gap={1}>
+              <Button type="submit" variant="contained">
+                Generate
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setForm(
+                    {
+                      ...form,
+                      prevResponseId: prevResponseId,
+                    }
+                  )
+                  handleSubmit({ preventDefault: () => { } } as React.FormEvent);
+                }}
+              >Generate As Previous</Button>
+            </Stack>
           </Stack>
         </Box>
       </Grid>

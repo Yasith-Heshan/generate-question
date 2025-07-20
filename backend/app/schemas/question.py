@@ -10,6 +10,7 @@ class QuestionGenerateRequestBody(BaseModel):
     image: Optional[str] = None  # Optional field for image content
     detailedAnswer: Optional[bool] = False  # Optional field to indicate if detailed answer is required
     exampleQuestion: Optional[str] = None  # Optional field for an example question
+    prevResponseId: Optional[str] = None  # Optional field for request ID
     
 class QuestionResponseBody(BaseModel):
     questions: List[str]
@@ -19,6 +20,7 @@ class QuestionResponseBody(BaseModel):
     section: str
     questionType: str
     difficulty: int
+    responseId: str  # Optional field for response ID
     
 class Question(BaseModel):
     section: str
