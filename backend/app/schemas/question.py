@@ -7,6 +7,7 @@ class QuestionGenerateRequestBody(BaseModel):
     difficulty: int
     description: str
     count: int
+    image: Optional[str] = None  # Optional field for image content
     detailedAnswer: Optional[bool] = False  # Optional field to indicate if detailed answer is required
     exampleQuestion: Optional[str] = None  # Optional field for an example question
     
@@ -34,3 +35,5 @@ class QuestionFilterRequestBody(BaseModel):
     difficulty: Optional[int] = None
     
     
+class TestRequestBody(BaseModel):
+    img: str  # Assuming the image is passed as a base64 string or a URL

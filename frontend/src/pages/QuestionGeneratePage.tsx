@@ -57,10 +57,12 @@ export const QuestionGeneratePage = () => {
   const handleFileChange = async (file: File) => {
     setFile(file);
     const base64String = await convertFileToBase64(file);
-    console.log("Selected file:", base64String);
-    const description = `Read the following image and generate questions based on it.: ${base64String}`;
+    let desc = form.description
+    if (desc == "") {
+      desc = "Image content:";
+    }
     setForm({
-      ...form, description,
+      ...form, image: base64String, description: desc
     })
   }
 

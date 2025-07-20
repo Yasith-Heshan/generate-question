@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 import re
 from fastapi import HTTPException
-from app.models.question_model import QuestionModel
+from app.models.models import QuestionModel
 
 
 # Load environment variables from .env file
@@ -65,13 +65,18 @@ def extract_mcq_answers(text):
     return [a.strip() for a in matches]
 
 
-def generate_math_word_problem(question_description,count=1,example_question=None):
-    
+def generate_math_word_problem(question_description,count=1,example_question=None, image=None):
+    imageToText = ""
+    if image:
+        imageToText = readContentFromImage(image)
+        if not imageToText:
+            raise HTTPException(status_code=400, detail="Failed to read content from image.")
     # Define the math prompt
     math_problem_count = "a math problem" if count == 1 else f"{count} math problems"
     math_prompt = f"""
     Create {math_problem_count} according to the following description:
     {question_description}
+    {imageToText if image else ""}
     {"Example question: " + example_question if example_question else ""}
     Give only the question, answer and suitable 4 mcq asnwers other than the correct answer.
     MCQ answers should be in the format: MCQ_Answers: [<mcq_answer1>, <mcq_answer2>, <mcq_answer3>, <mcq_answer4>]
@@ -96,6 +101,46 @@ def generate_math_word_problem(question_description,count=1,example_question=Non
     mcq_answers = extract_mcq_answers(response.output_text)
     return questions,answers, mcq_answers
 
+def readContentFromImage(imageBase64: str) -> str:
+    """
+    Reads content from an image using OpenAI's OCR capabilities.
+
+    Args:
+        imageBase64 (str): Base64-encoded image string.
+
+    Returns:
+        str: Extracted text from the image.
+    """
+    try:
+        # extract the base64 string from the imageBase64
+        if imageBase64.startswith("data:image/"):
+            imageBase64 = imageBase64.split(",")[1]
+        # Send the image to GPT-4 Vision model
+        response = openai.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{imageBase64}"
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": "Read and extract all visible text from this image."
+                        }
+                    ]
+                }
+            ],
+            max_tokens=1000
+        )
+        return response.choices[0].message.content.strip()
+
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
 
@@ -107,7 +152,7 @@ def createQuestion(requestBody: QuestionGenerateRequestBody) -> QuestionResponse
     questionType = requestBody.questionType
     difficulty = requestBody.difficulty
     try:
-        questions, answers, mcq_answers = generate_math_word_problem(description, count, requestBody.exampleQuestion)
+        questions, answers, mcq_answers = generate_math_word_problem(description, count, requestBody.exampleQuestion,requestBody.image)
         detailed_answers = get_detailed_answers(questions) if detailed_Answer else []
         questionResponse = QuestionResponseBody(
             questions=questions,
@@ -167,4 +212,3 @@ async def get_all_question_types_from_db():
         return question_types
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-    

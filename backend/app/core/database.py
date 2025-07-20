@@ -1,6 +1,6 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
-from app.models.question_model import QuestionModel
+from app.models.models import QuestionModel
 
 import os
 

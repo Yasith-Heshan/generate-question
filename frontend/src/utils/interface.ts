@@ -6,6 +6,7 @@ export interface QuestionGenerationRequestBody {
   description: string;
   detailedAnswer: boolean;
   exampleQuestion?: string;
+  image?: string; // Optional field for image content
 }
 
 export interface QuestionSaveRequestBody {
