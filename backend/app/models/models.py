@@ -15,8 +15,16 @@ class QuestionModel(Document):
         
 class KeywordModel(Document):
     keyword: str
+    section: str
     questionType: str
     difficulty: int
 
     class Settings:
         name = "keywords"  # Collection name
+        
+        # index based on keyword for faster search
+        # index based on section, questionType, and difficulty for filtering
+        indexes = [
+            {"fields": ["keyword"], "unique": True},
+            {"fields": ["section", "questionType", "difficulty"]}
+        ]   
