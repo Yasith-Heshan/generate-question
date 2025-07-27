@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 import re
 from fastapi import HTTPException
-from app.models.models import QuestionModel
+from app.models.models import QuestionModel, KeywordModel
 
 
 # Load environment variables from .env file
@@ -172,18 +172,61 @@ def createQuestion(requestBody: QuestionGenerateRequestBody) -> QuestionResponse
         raise HTTPException(status_code=400, detail=str(e))
     
     
+    
+async def add_keywords_to_db(keywords: list[str], section: str, questionType: str, difficulty: int):
+    """
+    Add keywords to the keywords collection. 
+    Only inserts keywords that don't already exist to maintain uniqueness.
+    """
+    try:
+        for keyword in keywords:
+            # Check if keyword already exists
+            existing_keyword = await KeywordModel.find_one({"keyword": keyword})
+            if not existing_keyword:
+                keyword_doc = KeywordModel(
+                    keyword=keyword,
+                    section=section,
+                    questionType=questionType,
+                    difficulty=difficulty
+                )
+                await keyword_doc.insert()
+    except Exception as e:
+        # Log the error but don't fail the question insertion
+        print(f"Error inserting keywords: {str(e)}")
+
 async def add_to_db(
     question: Question
 ):
     try:
         doc= QuestionModel(**question.dict())
         await doc.insert()
+        
+        # Insert keywords if they exist
+        if question.keywords:
+            await add_keywords_to_db(
+                keywords=question.keywords,
+                section=question.section,
+                questionType=question.questionType,
+                difficulty=question.difficulty
+            )
+        
         return {"message": "Question added successfully"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 async def add_all_to_db(questions: list[Question]):
     try:
         await QuestionModel.insert_many([QuestionModel(**q.dict()) for q in questions])
+        
+        # Insert keywords for all questions
+        for question in questions:
+            if question.keywords:
+                await add_keywords_to_db(
+                    keywords=question.keywords,
+                    section=question.section,
+                    questionType=question.questionType,
+                    difficulty=question.difficulty
+                )
+        
         return {"message": "All questions added successfully"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -214,5 +257,33 @@ async def get_all_question_types_from_db():
     try:
         question_types = await QuestionModel.get_motor_collection().distinct("questionType")
         return question_types
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+async def get_all_keywords_from_db():
+    """
+    Get all unique keywords from the keywords collection.
+    """
+    try:
+        keywords = await KeywordModel.get_motor_collection().distinct("keyword")
+        return keywords
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+async def get_keywords_by_filter(section: str = None, questionType: str = None, difficulty: int = None):
+    """
+    Get keywords filtered by section, questionType, and/or difficulty.
+    """
+    try:
+        filters = {}
+        if section:
+            filters["section"] = section
+        if questionType:
+            filters["questionType"] = questionType
+        if difficulty is not None:
+            filters["difficulty"] = difficulty
+        
+        keywords = await KeywordModel.find(filters).to_list()
+        return [keyword.keyword for keyword in keywords]
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

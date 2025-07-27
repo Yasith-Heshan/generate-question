@@ -11,6 +11,7 @@ class QuestionGenerateRequestBody(BaseModel):
     detailedAnswer: Optional[bool] = False  # Optional field to indicate if detailed answer is required
     exampleQuestion: Optional[str] = None  # Optional field for an example question
     prevResponseId: Optional[str] = None  # Optional field for request ID
+    keywords: Optional[List[str]] = []  # Optional field for keywords associated with the question
     
 class QuestionResponseBody(BaseModel):
     questions: List[str]
@@ -30,6 +31,7 @@ class Question(BaseModel):
     correctAnswer: str
     detailedAnswer: Optional[str] = None
     mcqAnswers: Optional[List[str]] = []
+    keywords: Optional[List[str]] = []  # Optional field for keywords associated with the question
     
 class QuestionFilterRequestBody(BaseModel):
     section:Optional[str] = None

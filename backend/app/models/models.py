@@ -9,6 +9,7 @@ class QuestionModel(Document):
     correctAnswer: str
     detailedAnswer: Optional[str] = None
     mcqAnswers: Optional[list[str]] = []
+    keywords: Optional[list[str]] = []  # Add keywords field to the model
 
     class Settings:
         name = "questions"  # Collection name
