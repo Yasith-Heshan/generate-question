@@ -347,7 +347,6 @@ export const QuestionGeneratePage = () => {
                   label="Keywords"
                   name="keywords"
                   fullWidth
-                  required
                   placeholder="e.g. algebra, equations, quadratic"
                   helperText="Type keywords and press Enter to add them, or select from existing options"
                 />
