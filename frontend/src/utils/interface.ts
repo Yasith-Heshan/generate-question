@@ -8,6 +8,7 @@ export interface QuestionGenerationRequestBody {
   exampleQuestion?: string;
   image?: string; // Optional field for image content
   prevResponseId?: string; // Optional field for response ID
+  keywords?: string[]; // Optional field for keywords
 }
 
 export interface QuestionSaveRequestBody {
@@ -17,6 +18,7 @@ export interface QuestionSaveRequestBody {
   question: string;
   correctAnswer: string;
   mcqAnswers?: string[];
+  keywords?: string[];
 }
 
 export interface GeneratedQuestionInfo {
@@ -31,6 +33,7 @@ export interface QuestionFilterRequestBody {
   section: string;
   questionType: string;
   difficulty: number;
+  keywords?: string[];
 }
 
 export interface QuestionFilterResponseItem {
@@ -40,6 +43,7 @@ export interface QuestionFilterResponseItem {
   question: string;
   detailedAnswer?: string;
   correctAnswer: string;
+  keywords?: string[];
   mcqAnswers?: string[];
 }
 

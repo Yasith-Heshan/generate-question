@@ -1,4 +1,4 @@
-from app.schemas.question import QuestionGenerateRequestBody, QuestionResponseBody,Question
+from app.schemas.question import QuestionGenerateRequestBody, QuestionResponseBody,Question, QuestionFilterRequestBody
 import openai
 from dotenv import load_dotenv
 import os
@@ -165,6 +165,7 @@ def createQuestion(requestBody: QuestionGenerateRequestBody) -> QuestionResponse
             section=section,
             questionType=questionType,
             difficulty=difficulty,
+            keywords=requestBody.keywords if requestBody.keywords else [],
             responseId=responseId
         )
         return questionResponse
@@ -231,7 +232,7 @@ async def add_all_to_db(questions: list[Question]):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
-async def filter_questions_from_db(questionFilterRequestBody: QuestionGenerateRequestBody):
+async def filter_questions_from_db(questionFilterRequestBody: QuestionFilterRequestBody):
     try:
         filters = {}
 
@@ -241,6 +242,8 @@ async def filter_questions_from_db(questionFilterRequestBody: QuestionGenerateRe
             filters["questionType"] = questionFilterRequestBody.questionType
         if questionFilterRequestBody.difficulty is not None:
             filters["difficulty"] = questionFilterRequestBody.difficulty
+        if questionFilterRequestBody.keywords:
+            filters["keywords"] = {"$in": questionFilterRequestBody.keywords}
         questions = await QuestionModel.find(filters).to_list()
         return questions
     except Exception as e:
@@ -248,14 +251,14 @@ async def filter_questions_from_db(questionFilterRequestBody: QuestionGenerateRe
     
 async def get_all_sections_from_db():
     try:
-        sections = await QuestionModel.get_motor_collection().distinct("section")
+        sections = await KeywordModel.get_motor_collection().distinct("section")
         return sections
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
 async def get_all_question_types_from_db():
     try:
-        question_types = await QuestionModel.get_motor_collection().distinct("questionType")
+        question_types = await KeywordModel.get_motor_collection().distinct("questionType")
         return question_types
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -285,5 +288,19 @@ async def get_keywords_by_filter(section: str = None, questionType: str = None, 
         
         keywords = await KeywordModel.find(filters).to_list()
         return [keyword.keyword for keyword in keywords]
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+async def get_question_types_by_section(section: str = None):
+    """
+    Get question types filtered by section.
+    """
+    try:
+        filters = {}
+        if section:
+            filters["section"] = section
+        
+        question_types = await KeywordModel.get_motor_collection().distinct("questionType", filters)
+        return question_types
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

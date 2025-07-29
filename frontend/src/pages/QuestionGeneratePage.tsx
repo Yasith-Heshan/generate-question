@@ -6,10 +6,11 @@ import {
   Stack,
   TextareaAutosize,
   CircularProgress,
-  Switch
+  Switch,
+  Autocomplete
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import GeneratedQuestions from "../Components/GeneratedQeustions";
 import type {
   GeneratedQuestionInfo,
@@ -20,10 +21,12 @@ import {
   generateQuestion,
   saveAllQuestions,
   saveQuestion,
+  getAllSections,
+  getQuestionTypesBySection,
+  getKeywordsByFilter
 } from "../api/openAiService";
 import { toast } from "react-toastify";
 import { FileUploader } from "react-drag-drop-files";
-import { Height } from "@mui/icons-material";
 
 export const QuestionGeneratePage = () => {
   const [form, setForm] = useState<QuestionGenerationRequestBody>({
@@ -33,6 +36,7 @@ export const QuestionGeneratePage = () => {
     questionType: "",
     difficulty: 1,
     detailedAnswer: false,
+    keywords: [],
   });
 
   const [questions, setQuestions] = useState<string[]>([]);
@@ -43,7 +47,62 @@ export const QuestionGeneratePage = () => {
   const [file, setFile] = useState<File | null>(null)
   const [prevResponseId, setPrevResponseId] = useState<string>("");
 
+  // State for autocomplete options
+  const [sections, setSections] = useState<string[]>([]);
+  const [questionTypes, setQuestionTypes] = useState<string[]>([]);
+  const [keywords, setKeywords] = useState<string[]>([]);
+  const [isLoadingOptions, setIsLoadingOptions] = useState(false);
+
   const fileTypes = ["JPG", "PNG", "GIF"];
+
+  // Fetch sections and question types on component mount
+  useEffect(() => {
+    const fetchOptions = async () => {
+      setIsLoadingOptions(true);
+      try {
+        const [sectionsResponse, questionTypesResponse, keywordsResponse] = await Promise.all([
+          getAllSections(),
+          getQuestionTypesBySection(),
+          getKeywordsByFilter(),
+        ]);
+        setSections(sectionsResponse.data);
+        setQuestionTypes(questionTypesResponse.data);
+        setKeywords(keywordsResponse.data);
+      } catch (error) {
+        console.error("Error fetching options:", error);
+        toast.error("Failed to load options. Please refresh the page.");
+      } finally {
+        setIsLoadingOptions(false);
+      }
+    };
+
+    fetchOptions();
+  }, []);
+
+  useEffect(() => {
+    const fetchKeywordsAndQuestionTypes = async () => {
+      setIsLoadingOptions(true);
+      try {
+        const [keywordsResponse, questionTypesResponse] = await Promise.all([
+          getKeywordsByFilter(form.section, form.questionType, form.difficulty),
+          getQuestionTypesBySection(form.section),
+        ]);
+        setKeywords(keywordsResponse.data);
+        setQuestionTypes(questionTypesResponse.data);
+      } catch (error) {
+        console.error("Error fetching keywords or question types:", error);
+        toast.error("Failed to load keywords or question types. Please refresh the page.");
+      } finally {
+        setIsLoadingOptions(false);
+      }
+    };
+
+    fetchKeywordsAndQuestionTypes();
+
+    if (form.section || form.questionType || form.difficulty) {
+      fetchKeywordsAndQuestionTypes();
+    }
+  }, [form.section, form.questionType, form.difficulty]);
 
   // convert file into base64 string
   const convertFileToBase64 = (file: File): Promise<string> => {
@@ -75,7 +134,9 @@ export const QuestionGeneratePage = () => {
     setForm((prev) => ({
       ...prev,
       [name as string]:
-        name === "count" || name === "difficulty" ? Number(value) : value,
+        name === "count" || name === "difficulty"
+          ? Number(value)
+          : value,
     }));
   };
 
@@ -119,11 +180,21 @@ export const QuestionGeneratePage = () => {
     generatedQuestionInfo: GeneratedQuestionInfo
   ): Promise<void> {
     try {
+      if (form.keywords?.length == 0) {
+        toast.error("Please select at least one keyword before adding to the database.");
+        setForm((prev) => ({
+          ...prev,
+          keywords: [],
+        }));
+        return;
+      }
+
       await saveQuestion({
         ...generatedQuestionInfo,
         section: form.section,
         questionType: form.questionType,
         difficulty: form.difficulty,
+        keywords: form.keywords,
       } as QuestionSaveRequestBody);
       removeAddedQuestion(generatedQuestionInfo.index);
       toast.success("Question added to the database successfully!");
@@ -146,6 +217,7 @@ export const QuestionGeneratePage = () => {
           : undefined,
         correctAnswer: correctAnswers[index],
         mcqAnswers: mcqAnswers[index].split(",") || [],
+        keywords: form.keywords,
       } as QuestionSaveRequestBody)
     );
     try {
@@ -170,23 +242,60 @@ export const QuestionGeneratePage = () => {
           }}
         >
           <Stack component="form" spacing={2} onSubmit={handleSubmit}>
-            <TextField
-              label="Section"
-              name="section"
+            <Autocomplete
+              options={sections}
               value={form.section}
-              onChange={handleChange}
-              fullWidth
-              required
+              onChange={(_event, newValue) => {
+                setForm((prev) => ({
+                  ...prev,
+                  section: newValue || "",
+                }));
+              }}
+              onInputChange={(_event, newInputValue) => {
+                setForm((prev) => ({
+                  ...prev,
+                  section: newInputValue,
+                }));
+              }}
+              freeSolo
+              loading={isLoadingOptions}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Section"
+                  name="section"
+                  fullWidth
+                  required
+                />
+              )}
             />
 
-            <TextField
-              label="Question Type"
-              name="questionType"
-              type="text"
+            <Autocomplete
+              options={questionTypes}
               value={form.questionType}
-              onChange={handleChange}
-              fullWidth
-              required
+              onChange={(_event, newValue) => {
+                setForm((prev) => ({
+                  ...prev,
+                  questionType: newValue || "",
+                }));
+              }}
+              onInputChange={(_event, newInputValue) => {
+                setForm((prev) => ({
+                  ...prev,
+                  questionType: newInputValue,
+                }));
+              }}
+              freeSolo
+              loading={isLoadingOptions}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Question Type"
+                  name="questionType"
+                  fullWidth
+                  required
+                />
+              )}
             />
 
             <TextField
@@ -216,6 +325,33 @@ export const QuestionGeneratePage = () => {
               maxRows={5}
               placeholder="Description"
               required
+            />
+
+            <Autocomplete
+              multiple
+              freeSolo
+              options={keywords}
+              value={form.keywords}
+              loading={isLoadingOptions}
+              onChange={(_event, newValue) => {
+                const keywords = Array.isArray(newValue) ? newValue : [];
+                setForm((prev) => ({
+                  ...prev,
+                  keywords: keywords,
+                }));
+              }}
+
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Keywords"
+                  name="keywords"
+                  fullWidth
+                  required
+                  placeholder="e.g. algebra, equations, quadratic"
+                  helperText="Type keywords and press Enter to add them, or select from existing options"
+                />
+              )}
             />
 
             <FileUploader

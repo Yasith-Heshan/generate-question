@@ -6,11 +6,13 @@ import {
     Stack,
     CircularProgress,
     MenuItem,
+    Autocomplete,
+    Chip,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { useState } from "react";
 import type { QuestionFilterRequestBody, QuestionFilterResponseItem } from "../utils/interface";
-import { filterQuestions, getAllQuestionTypes, getAllSections } from "../api/openAiService";
+import { filterQuestions, getAllQuestionTypes, getAllSections, getAllKeywords } from "../api/openAiService";
 import FilteredQuestions from "../Components/FilteredQuestions";
 import { toast } from "react-toastify";
 
@@ -19,12 +21,14 @@ const FilterQuestionsPage = () => {
         section: "",
         questionType: "",
         difficulty: 1,
+        keywords: [],
     });
 
     const [filteredQuestions, setFiltedQuestions] = useState<QuestionFilterResponseItem[]>([]);
     const [isGenerating, setIsGenerating] = useState(false);
     const [sections, setSections] = useState<string[]>([]);
     const [questionTypes, setQuestionTypes] = useState<string[]>([]);
+    const [availableKeywords, setAvailableKeywords] = useState<string[]>([]);
 
     useEffect(() => {
         const fetchSectionsAndTypes = async () => {
@@ -34,8 +38,11 @@ const FilterQuestionsPage = () => {
 
                 const typesResponse = await getAllQuestionTypes();
                 setQuestionTypes(typesResponse.data);
+
+                const keywordsResponse = await getAllKeywords();
+                setAvailableKeywords(keywordsResponse.data);
             } catch (error) {
-                toast.error("Failed to fetch sections or question types. Please try again.");
+                toast.error("Failed to fetch sections, question types, or keywords. Please try again.");
             }
         };
 
@@ -59,6 +66,16 @@ const FilterQuestionsPage = () => {
 
     const clearState = () => {
         setFiltedQuestions([]);
+    };
+
+    const resetForm = () => {
+        setForm({
+            section: "",
+            questionType: "",
+            difficulty: 1,
+            keywords: [],
+        });
+        clearState();
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -123,6 +140,32 @@ const FilterQuestionsPage = () => {
                             ))}
                         </TextField>
 
+                        <Autocomplete
+                            multiple
+                            options={availableKeywords}
+                            value={form.keywords || []}
+                            onChange={(_, newValue) => {
+                                setForm((prev) => ({
+                                    ...prev,
+                                    keywords: newValue,
+                                }));
+                            }}
+                            renderTags={(value, getTagProps) =>
+                                value.map((option, index) => (
+                                    <Chip variant="outlined" label={option} {...getTagProps({ index })} />
+                                ))
+                            }
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Keywords"
+                                    placeholder="Select or type keywords"
+                                    helperText="Choose keywords to filter questions"
+                                />
+                            )}
+                            freeSolo
+                        />
+
                         <TextField
                             label="Difficulty"
                             name="difficulty"
@@ -140,6 +183,10 @@ const FilterQuestionsPage = () => {
 
                         <Button type="submit" variant="contained">
                             Filter
+                        </Button>
+
+                        <Button type="button" variant="outlined" onClick={resetForm}>
+                            Clear
                         </Button>
                     </Stack>
                 </Box>

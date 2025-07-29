@@ -23,9 +23,8 @@ class KeywordModel(Document):
     class Settings:
         name = "keywords"  # Collection name
         
-        # index based on keyword for faster search
-        # index based on section, questionType, and difficulty for filtering
+        # Fixed index configuration
         indexes = [
-            {"fields": ["keyword"], "unique": True},
-            {"fields": ["section", "questionType", "difficulty"]}
-        ]   
+            "keyword",  # Simple index on keyword field
+            [("section", 1), ("questionType", 1), ("difficulty", 1)]  # Compound index
+        ]

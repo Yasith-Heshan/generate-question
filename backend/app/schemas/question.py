@@ -21,6 +21,7 @@ class QuestionResponseBody(BaseModel):
     section: str
     questionType: str
     difficulty: int
+    keywords: Optional[List[str]] = []  # Optional field for keywords associated with the question
     responseId: str  # Optional field for response ID
     
 class Question(BaseModel):
@@ -37,6 +38,7 @@ class QuestionFilterRequestBody(BaseModel):
     section:Optional[str] = None
     questionType: Optional[str] = None
     difficulty: Optional[int] = None
+    keywords: Optional[List[str]] = []
     
     
 class TestRequestBody(BaseModel):

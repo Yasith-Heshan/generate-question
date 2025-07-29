@@ -36,3 +36,25 @@ export const getAllSections = async () => {
 export const getAllQuestionTypes = async () => {
   return await axios.get("/api/v1/question_types");
 }
+
+export const getAllKeywords = async () => {
+  return await axios.get("/api/v1/keywords");
+}
+
+export const getKeywordsByFilter = async (section?: string, questionType?: string, difficulty?: number) => {
+  const params = new URLSearchParams();
+  if (section) params.append("section", section);
+  if (questionType) params.append("questionType", questionType);
+  if (difficulty !== undefined) params.append("difficulty", difficulty.toString());
+
+  const queryString = params.toString();
+  return await axios.get(`/api/v1/keywords/filter${queryString ? `?${queryString}` : ""}`);
+}
+
+export const getQuestionTypesBySection = async (section?: string) => {
+  const params = new URLSearchParams();
+  if (section) params.append("section", section);
+
+  const queryString = params.toString();
+  return await axios.get(`/api/v1/question_types/filter${queryString ? `?${queryString}` : ""}`);
+}

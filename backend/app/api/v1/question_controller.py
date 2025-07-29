@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.services.question_service import createQuestion,add_to_db, add_all_to_db, filter_questions_from_db, get_all_sections_from_db, get_all_question_types_from_db, get_all_keywords_from_db, get_keywords_by_filter, readContentFromImage
+from app.services.question_service import createQuestion,add_to_db, add_all_to_db, filter_questions_from_db, get_all_sections_from_db, get_all_question_types_from_db, get_all_keywords_from_db, get_keywords_by_filter, get_question_types_by_section, readContentFromImage
 from app.schemas.question import QuestionGenerateRequestBody, QuestionResponseBody, Question, QuestionFilterRequestBody, TestRequestBody
 from typing import  List
 
@@ -36,6 +36,10 @@ async def get_all_keywords():
 @questionController.get("/keywords/filter", response_model=List[str])
 async def get_keywords_filtered(section: str = None, questionType: str = None, difficulty: int = None):
     return await get_keywords_by_filter(section, questionType, difficulty)
+
+@questionController.get("/question_types/filter", response_model=List[str])
+async def get_question_types_filtered(section: str = None):
+    return await get_question_types_by_section(section)
 
 @questionController.post("/test", response_model=str)
 def get_all_questions(testRequestBody: TestRequestBody):

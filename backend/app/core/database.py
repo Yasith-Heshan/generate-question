@@ -1,6 +1,6 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
-from app.models.models import QuestionModel
+from app.models.models import KeywordModel, QuestionModel
 
 import os
 
@@ -9,4 +9,4 @@ MONGO_DB_NAME = os.getenv("MONGO_DB_NAME")
 
 async def init_db():
     client = AsyncIOMotorClient(MONGO_URI)
-    await init_beanie(database=client[MONGO_DB_NAME], document_models=[QuestionModel])
+    await init_beanie(database=client[MONGO_DB_NAME], document_models=[QuestionModel,KeywordModel])
