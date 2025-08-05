@@ -79,30 +79,7 @@ export const QuestionGeneratePage = () => {
     fetchOptions();
   }, []);
 
-  useEffect(() => {
-    const fetchKeywordsAndQuestionTypes = async () => {
-      setIsLoadingOptions(true);
-      try {
-        const [keywordsResponse, questionTypesResponse] = await Promise.all([
-          getKeywordsByFilter(form.section, form.questionType, form.difficulty),
-          getQuestionTypesBySection(form.section),
-        ]);
-        setKeywords(keywordsResponse.data);
-        setQuestionTypes(questionTypesResponse.data);
-      } catch (error) {
-        console.error("Error fetching keywords or question types:", error);
-        toast.error("Failed to load keywords or question types. Please refresh the page.");
-      } finally {
-        setIsLoadingOptions(false);
-      }
-    };
 
-    fetchKeywordsAndQuestionTypes();
-
-    if (form.section || form.questionType || form.difficulty) {
-      fetchKeywordsAndQuestionTypes();
-    }
-  }, [form.section, form.questionType, form.difficulty]);
 
   // convert file into base64 string
   const convertFileToBase64 = (file: File): Promise<string> => {

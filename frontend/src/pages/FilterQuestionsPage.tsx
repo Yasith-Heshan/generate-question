@@ -12,7 +12,7 @@ import {
 import Grid from "@mui/material/Grid";
 import { useState } from "react";
 import type { QuestionFilterRequestBody, QuestionFilterResponseItem } from "../utils/interface";
-import { filterQuestions, getAllQuestionTypes, getAllSections, getAllKeywords } from "../api/openAiService";
+import { filterQuestions, getAllQuestionTypes, getAllSections, getAllKeywords, getKeywordsByFilter, getQuestionTypesBySection } from "../api/openAiService";
 import FilteredQuestions from "../Components/FilteredQuestions";
 import { toast } from "react-toastify";
 
@@ -48,6 +48,31 @@ const FilterQuestionsPage = () => {
 
         fetchSectionsAndTypes();
     }, []);
+
+    useEffect(() => {
+        const fetchKeywordsAndQuestionTypes = async () => {
+            setIsGenerating(true);
+            try {
+                const [keywordsResponse, questionTypesResponse] = await Promise.all([
+                    getKeywordsByFilter(form.section, form.questionType, form.difficulty),
+                    getQuestionTypesBySection(form.section),
+                ]);
+                setAvailableKeywords(keywordsResponse.data);
+                setQuestionTypes(questionTypesResponse.data);
+            } catch (error) {
+                console.error("Error fetching keywords or question types:", error);
+                toast.error("Failed to load keywords or question types. Please refresh the page.");
+            } finally {
+                setIsGenerating(false);
+            }
+        };
+
+        fetchKeywordsAndQuestionTypes();
+
+        if (form.section || form.questionType || form.difficulty) {
+            fetchKeywordsAndQuestionTypes();
+        }
+    }, [form.section, form.questionType, form.difficulty]);
 
 
 
@@ -140,6 +165,21 @@ const FilterQuestionsPage = () => {
                             ))}
                         </TextField>
 
+                        <TextField
+                            label="Difficulty"
+                            name="difficulty"
+                            value={form.difficulty}
+                            onChange={handleChange}
+                            fullWidth
+                            select
+                        >
+                            {[1, 2, 3, 4, 5].map((difficulty) => (
+                                <MenuItem key={difficulty} value={difficulty}>
+                                    {difficulty}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+
                         <Autocomplete
                             multiple
                             options={availableKeywords}
@@ -166,20 +206,7 @@ const FilterQuestionsPage = () => {
                             freeSolo
                         />
 
-                        <TextField
-                            label="Difficulty"
-                            name="difficulty"
-                            value={form.difficulty}
-                            onChange={handleChange}
-                            fullWidth
-                            select
-                        >
-                            {[1, 2, 3, 4, 5].map((difficulty) => (
-                                <MenuItem key={difficulty} value={difficulty}>
-                                    {difficulty}
-                                </MenuItem>
-                            ))}
-                        </TextField>
+
 
                         <Button type="submit" variant="contained">
                             Filter
