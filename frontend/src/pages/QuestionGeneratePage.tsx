@@ -147,11 +147,17 @@ export const QuestionGeneratePage = () => {
       clearState();
       setIsGenerating(true);
       const response = await generateQuestion(form);
+      let tempMcqAnswers: string[] = [];
+      if (response.data.mcqAnswers) {
+        tempMcqAnswers = (response.data.mcqAnswers as string[]).map(
+          (mcqAnswer) => mcqAnswer.replace(/^\[|\]$/g, '')
+        )
+      }
 
       setQuestions(response.data.questions);
       setCorrectAnswers(response.data.correctAnswers);
       setDetailedAnswers(response.data.detailedAnswers || []);
-      setMcqAnswers(response.data.mcqAnswers);
+      setMcqAnswers(tempMcqAnswers);
       setPrevResponseId(response.data.responseId || "");
 
     } catch (error) {
@@ -166,6 +172,29 @@ export const QuestionGeneratePage = () => {
     setQuestions((prev) => prev.filter((_, i) => i !== index));
     setCorrectAnswers((prev) => prev.filter((_, i) => i !== index));
     setMcqAnswers((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleEditQuestion = (
+    index: number,
+    editedData: {
+      question: string;
+      correctAnswer: string;
+      detailedAnswer?: string;
+      mcqAnswers: string[];
+    }
+  ) => {
+    setQuestions((prev) =>
+      prev.map((q, i) => i === index ? editedData.question : q)
+    );
+    setCorrectAnswers((prev) =>
+      prev.map((a, i) => i === index ? editedData.correctAnswer : a)
+    );
+    setDetailedAnswers((prev) =>
+      prev.map((d, i) => i === index ? (editedData.detailedAnswer || "") : d)
+    );
+    setMcqAnswers((prev) =>
+      prev.map((m, i) => i === index ? editedData.mcqAnswers.join(",") : m)
+    );
   };
 
 
@@ -438,6 +467,7 @@ export const QuestionGeneratePage = () => {
               correctAnswers={correctAnswers}
               mcqAnswers={mcqAnswers}
               onAddToDB={handleAddToDB}
+              onEditQuestion={handleEditQuestion}
             />
           </Box>
           <Box
