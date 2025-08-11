@@ -82,6 +82,30 @@ export const QuestionGeneratePage = () => {
     fetchOptions();
   }, []);
 
+  // Fetch keywords and question types based on form changes
+  useEffect(() => {
+    const fetchKeywordsAndQuestionTypes = async () => {
+      setIsGenerating(true);
+      try {
+        const [keywordsResponse, questionTypesResponse] = await Promise.all([
+          getKeywordsByFilter(form.section, form.questionType, form.difficulty),
+          getQuestionTypesBySection(form.section),
+        ]);
+        setKeywords(keywordsResponse.data);
+        setQuestionTypes(questionTypesResponse.data);
+      } catch (error) {
+        console.error("Error fetching keywords or question types:", error);
+        toast.error("Failed to load keywords or question types. Please refresh the page.");
+      } finally {
+        setIsGenerating(false);
+      }
+    };
+
+    if (form.section || form.questionType || form.difficulty) {
+      fetchKeywordsAndQuestionTypes();
+    }
+  }, [form.section, form.questionType, form.difficulty]);
+
 
 
   // convert file into base64 string
