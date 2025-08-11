@@ -8,8 +8,9 @@ import {
     Button,
     Box,
     Chip,
+    IconButton,
 } from "@mui/material";
-import { Add as AddIcon, Close as CloseIcon } from "@mui/icons-material";
+import { Add as AddIcon, Close as CloseIcon, Edit as EditIcon, Check as CheckIcon, ContentCopy as CopyIcon } from "@mui/icons-material";
 import { MathJaxContext, MathJax } from "better-react-mathjax";
 
 interface EditQuestionModalProps {
@@ -40,6 +41,8 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
     const [detailedAnswer, setDetailedAnswer] = useState("");
     const [mcqAnswers, setMcqAnswers] = useState<string[]>([]);
     const [newMcqAnswer, setNewMcqAnswer] = useState("");
+    const [editingMcqIndex, setEditingMcqIndex] = useState<number | null>(null);
+    const [editingMcqValue, setEditingMcqValue] = useState("");
 
     const config = {
         loader: { load: ["input/tex", "output/chtml"] },
@@ -52,6 +55,8 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
             setDetailedAnswer(initialData.detailedAnswer || "");
             setMcqAnswers(initialData.mcqAnswers || []);
             setNewMcqAnswer("");
+            setEditingMcqIndex(null);
+            setEditingMcqValue("");
         }
     }, [open, initialData]);
 
@@ -64,6 +69,43 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
 
     const handleRemoveMcqAnswer = (indexToRemove: number) => {
         setMcqAnswers(mcqAnswers.filter((_, index) => index !== indexToRemove));
+    };
+
+    const handleEditMcqAnswer = (index: number) => {
+        setEditingMcqIndex(index);
+        setEditingMcqValue(mcqAnswers[index]);
+    };
+
+    const handleSaveMcqEdit = () => {
+        if (editingMcqIndex !== null && editingMcqValue.trim()) {
+            const updatedAnswers = [...mcqAnswers];
+            updatedAnswers[editingMcqIndex] = editingMcqValue.trim();
+            setMcqAnswers(updatedAnswers);
+            setEditingMcqIndex(null);
+            setEditingMcqValue("");
+        }
+    };
+
+    const handleCancelMcqEdit = () => {
+        setEditingMcqIndex(null);
+        setEditingMcqValue("");
+    };
+
+    const handleCopyMcqAnswer = async (answer: string) => {
+        try {
+            await navigator.clipboard.writeText(answer);
+            // You could add a toast notification here if you have one available
+            console.log('MCQ answer copied to clipboard:', answer);
+        } catch (err) {
+            console.error('Failed to copy to clipboard:', err);
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = answer;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+        }
     };
 
     const handleSave = () => {
@@ -176,20 +218,80 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
                         {mcqAnswers.length > 0 && (
                             <Box>
                                 <strong>MCQ Answer Options:</strong>
-                                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
+                                <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mt: 1 }}>
                                     {mcqAnswers.map((answer, index) => (
-                                        <Chip
-                                            key={index}
-                                            label={
-                                                <MathJaxContext config={config}>
-                                                    <MathJax inline>{answer}</MathJax>
-                                                </MathJaxContext>
-                                            }
-                                            onDelete={() => handleRemoveMcqAnswer(index)}
-                                            deleteIcon={<CloseIcon />}
-                                            variant="outlined"
-                                            sx={{ maxWidth: "200px" }}
-                                        />
+                                        <Box key={index} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                            {editingMcqIndex === index ? (
+                                                // Edit mode
+                                                <>
+                                                    <TextField
+                                                        value={editingMcqValue}
+                                                        onChange={(e) => setEditingMcqValue(e.target.value)}
+                                                        size="small"
+                                                        fullWidth
+                                                        onKeyPress={(e) => {
+                                                            if (e.key === "Enter") {
+                                                                handleSaveMcqEdit();
+                                                            } else if (e.key === "Escape") {
+                                                                handleCancelMcqEdit();
+                                                            }
+                                                        }}
+                                                        autoFocus
+                                                    />
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={handleSaveMcqEdit}
+                                                        color="primary"
+                                                    >
+                                                        <CheckIcon />
+                                                    </IconButton>
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={handleCancelMcqEdit}
+                                                        color="secondary"
+                                                    >
+                                                        <CloseIcon />
+                                                    </IconButton>
+                                                </>
+                                            ) : (
+                                                // Display mode
+                                                <>
+                                                    <Chip
+                                                        label={
+                                                            <MathJaxContext config={config}>
+                                                                <MathJax inline>{answer}</MathJax>
+                                                            </MathJaxContext>
+                                                        }
+                                                        variant="outlined"
+                                                        sx={{ maxWidth: "300px", flexGrow: 1 }}
+                                                    />
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => handleCopyMcqAnswer(answer)}
+                                                        color="info"
+                                                        title="Copy to clipboard"
+                                                    >
+                                                        <CopyIcon />
+                                                    </IconButton>
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => handleEditMcqAnswer(index)}
+                                                        color="primary"
+                                                        title="Edit this answer"
+                                                    >
+                                                        <EditIcon />
+                                                    </IconButton>
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => handleRemoveMcqAnswer(index)}
+                                                        color="error"
+                                                        title="Delete this answer"
+                                                    >
+                                                        <CloseIcon />
+                                                    </IconButton>
+                                                </>
+                                            )}
+                                        </Box>
                                     ))}
                                 </Box>
                             </Box>
