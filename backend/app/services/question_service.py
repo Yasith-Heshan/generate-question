@@ -251,27 +251,23 @@ async def filter_questions_from_db(questionFilterRequestBody: QuestionFilterRequ
     
 async def get_all_sections_from_db():
     try:
-        sections = await KeywordModel.get_motor_collection().distinct("section")
+        print("Attempting to get sections from database...")
+        
+        # Method 4: Using find with projection (most efficient for this setup)
+        # Only fetch the section field to reduce data transfer
+        keywords = await KeywordModel.find({}).to_list()
+        sections = sorted(list(set([keyword.section for keyword in keywords])))
+        
+        # If still no sections found, return empty list instead of failing
+        if not sections:
+            print("No sections found in collection")
+            return []
+        
+        print(f"Found sections: {sections}")
         return sections
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    
-async def get_all_question_types_from_db():
-    try:
-        question_types = await KeywordModel.get_motor_collection().distinct("questionType")
-        return question_types
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-async def get_all_keywords_from_db():
-    """
-    Get all unique keywords from the keywords collection.
-    """
-    try:
-        keywords = await KeywordModel.get_motor_collection().distinct("keyword")
-        return keywords
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        print(f"Error getting sections: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Error: {str(e)}")
 
 async def get_keywords_by_filter(section: str = None, questionType: str = None, difficulty: int = None):
     """
@@ -300,7 +296,10 @@ async def get_question_types_by_section(section: str = None):
         if section:
             filters["section"] = section
         
-        question_types = await KeywordModel.get_motor_collection().distinct("questionType", filters)
+        # Use the same working pattern as other endpoints
+        keywords = await KeywordModel.find(filters).to_list()
+        question_types = sorted(list(set([keyword.questionType for keyword in keywords])))
+        
         return question_types
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

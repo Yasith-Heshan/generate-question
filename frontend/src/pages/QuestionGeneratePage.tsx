@@ -68,6 +68,9 @@ export const QuestionGeneratePage = () => {
         setSections(sectionsResponse.data);
         setQuestionTypes(questionTypesResponse.data);
         setKeywords(keywordsResponse.data);
+
+
+
       } catch (error) {
         console.error("Error fetching options:", error);
         toast.error("Failed to load options. Please refresh the page.");

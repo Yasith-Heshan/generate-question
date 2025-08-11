@@ -12,7 +12,7 @@ import {
 import Grid from "@mui/material/Grid";
 import { useState } from "react";
 import type { QuestionFilterRequestBody, QuestionFilterResponseItem } from "../utils/interface";
-import { filterQuestions, getAllQuestionTypes, getAllSections, getAllKeywords, getKeywordsByFilter, getQuestionTypesBySection } from "../api/openAiService";
+import { filterQuestions, getAllSections, getKeywordsByFilter, getQuestionTypesBySection } from "../api/openAiService";
 import FilteredQuestions from "../Components/FilteredQuestions";
 import { toast } from "react-toastify";
 
@@ -29,24 +29,29 @@ const FilterQuestionsPage = () => {
     const [sections, setSections] = useState<string[]>([]);
     const [questionTypes, setQuestionTypes] = useState<string[]>([]);
     const [availableKeywords, setAvailableKeywords] = useState<string[]>([]);
+    const [isLoadingOptions, setIsLoadingOptions] = useState(false);
 
     useEffect(() => {
-        const fetchSectionsAndTypes = async () => {
+        const fetchOptions = async () => {
+            setIsLoadingOptions(true);
             try {
-                const sectionsResponse = await getAllSections();
+                const [sectionsResponse, questionTypesResponse, keywordsResponse] = await Promise.all([
+                    getAllSections(),
+                    getQuestionTypesBySection(),
+                    getKeywordsByFilter(),
+                ]);
                 setSections(sectionsResponse.data);
-
-                const typesResponse = await getAllQuestionTypes();
-                setQuestionTypes(typesResponse.data);
-
-                const keywordsResponse = await getAllKeywords();
+                setQuestionTypes(questionTypesResponse.data);
                 setAvailableKeywords(keywordsResponse.data);
             } catch (error) {
-                toast.error("Failed to fetch sections, question types, or keywords. Please try again.");
+                console.error("Error fetching options:", error);
+                toast.error("Failed to load options. Please refresh the page.");
+            } finally {
+                setIsLoadingOptions(false);
             }
         };
 
-        fetchSectionsAndTypes();
+        fetchOptions();
     }, []);
 
     useEffect(() => {
@@ -184,6 +189,7 @@ const FilterQuestionsPage = () => {
                             multiple
                             options={availableKeywords}
                             value={form.keywords || []}
+                            loading={isLoadingOptions}
                             onChange={(_, newValue) => {
                                 setForm((prev) => ({
                                     ...prev,
