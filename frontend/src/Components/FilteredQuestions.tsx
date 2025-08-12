@@ -18,7 +18,7 @@ const FilteredQuestions = ({
   return (
     <Box sx={{ marginTop: 4 }}>
       <h2>Filtered Questions</h2>
-      {filteredQuestionResponseItems.map((question, index) => (
+      {filteredQuestionResponseItems.map((_, index) => (
         <Box
           key={index}
           sx={{
@@ -36,6 +36,13 @@ const FilteredQuestions = ({
             }}
           >
             <MathJaxContext config={config}>
+              {filteredQuestionResponseItems[index].id && (
+                <h3>
+                  <MathJax inline>
+                    {`ID: ${filteredQuestionResponseItems[index].id}`}
+                  </MathJax>
+                </h3>
+              )}
               <h3>
                 {" "}
                 <MathJax inline>

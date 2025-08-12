@@ -37,6 +37,7 @@ export interface QuestionFilterRequestBody {
 }
 
 export interface QuestionFilterResponseItem {
+  id?: string;  // MongoDB ObjectId as string
   section: string;
   questionType: string;
   difficulty: number;

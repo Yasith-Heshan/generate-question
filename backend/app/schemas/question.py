@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, List
+from beanie import PydanticObjectId
     
 class QuestionGenerateRequestBody(BaseModel):
     section: str
@@ -25,6 +26,7 @@ class QuestionResponseBody(BaseModel):
     responseId: str  # Optional field for response ID
     
 class Question(BaseModel):
+    id: Optional[PydanticObjectId] = None
     section: str
     questionType: str
     difficulty: int

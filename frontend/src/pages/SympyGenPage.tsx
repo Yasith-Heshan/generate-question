@@ -21,7 +21,6 @@ import {
 } from "../api/sympyService";
 import { toast } from "react-toastify";
 import { saveQuestion, saveAllQuestions } from "../api/openAiService";
-import { CheckBox } from "@mui/icons-material";
 
 export const SympyGeneratePage = () => {
   const [form, setForm] = useState<SympyGeneratorRequestBody>({
