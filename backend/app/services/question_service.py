@@ -244,6 +244,9 @@ async def filter_questions_from_db(questionFilterRequestBody: QuestionFilterRequ
             filters["difficulty"] = questionFilterRequestBody.difficulty
         if questionFilterRequestBody.keywords:
             filters["keywords"] = {"$in": questionFilterRequestBody.keywords}
+        if questionFilterRequestBody.id:
+            from beanie import PydanticObjectId
+            filters["_id"] = PydanticObjectId(questionFilterRequestBody.id)
         questions = await QuestionModel.find(filters).to_list()
         return questions
     except Exception as e:

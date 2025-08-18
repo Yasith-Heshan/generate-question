@@ -41,6 +41,7 @@ class QuestionFilterRequestBody(BaseModel):
     questionType: Optional[str] = None
     difficulty: Optional[int] = None
     keywords: Optional[List[str]] = []
+    id: Optional[str] = None  # Optional field for filtering by question ID
 
 class QuestionUpdateRequestBody(BaseModel):
     section: Optional[str] = None

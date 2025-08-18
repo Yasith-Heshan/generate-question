@@ -34,6 +34,7 @@ export interface QuestionFilterRequestBody {
   questionType: string;
   difficulty: number;
   keywords?: string[];
+  id?: string;  // Optional field for filtering by question ID
 }
 
 export interface QuestionFilterResponseItem {

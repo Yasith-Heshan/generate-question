@@ -23,6 +23,7 @@ const FilterQuestionsPage = () => {
         questionType: "",
         difficulty: 1,
         keywords: [],
+        id: "",
     });
 
     const [filteredQuestions, setFiltedQuestions] = useState<QuestionFilterResponseItem[]>([]);
@@ -109,6 +110,7 @@ const FilterQuestionsPage = () => {
             questionType: "",
             difficulty: 1,
             keywords: [],
+            id: "",
         });
         clearState();
     };
@@ -195,6 +197,18 @@ const FilterQuestionsPage = () => {
                     }}
                 >
                     <Stack component="form" spacing={2} onSubmit={handleSubmit}>
+
+                        <TextField
+                            label="Question ID"
+                            name="id"
+                            type="text"
+                            value={form.id || ""}
+                            onChange={handleChange}
+                            fullWidth
+                            placeholder="Enter question ID to search for specific question"
+                            helperText="Optional: Enter a specific question ID to find exact question"
+                        />
+
                         <TextField
                             select
                             label="Section"
