@@ -1,4 +1,4 @@
-from app.schemas.question import QuestionGenerateRequestBody, QuestionResponseBody,Question, QuestionFilterRequestBody
+from app.schemas.question import QuestionGenerateRequestBody, QuestionResponseBody,Question, QuestionFilterRequestBody, QuestionUpdateRequestBody
 import openai
 from dotenv import load_dotenv
 import os
@@ -247,6 +247,53 @@ async def filter_questions_from_db(questionFilterRequestBody: QuestionFilterRequ
         questions = await QuestionModel.find(filters).to_list()
         return questions
     except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+async def update_question_in_db(question_id: str, update_data: QuestionUpdateRequestBody):
+    """
+    Update a question in the database by ID.
+    """
+    try:
+        from beanie import PydanticObjectId
+        
+        # Convert string ID to ObjectId
+        object_id = PydanticObjectId(question_id)
+        
+        # Find the question by ID
+        question = await QuestionModel.get(object_id)
+        if not question:
+            raise HTTPException(status_code=404, detail="Question not found")
+        
+        # Get the update data as dict and filter out None values
+        update_dict = update_data.dict(exclude_unset=True)
+        
+        # Update the question with the provided data
+        for field, value in update_dict.items():
+            if value is not None:
+                setattr(question, field, value)
+        
+        # Save the updated question
+        await question.save()
+        
+        # Handle keywords update if provided
+        if 'keywords' in update_dict and update_dict['keywords'] is not None:
+            # Get the updated question data
+            section = getattr(question, 'section', None)
+            question_type = getattr(question, 'questionType', None)
+            difficulty = getattr(question, 'difficulty', None)
+            
+            if section and question_type and difficulty is not None:
+                await add_keywords_to_db(
+                    keywords=update_dict['keywords'],
+                    section=section,
+                    questionType=question_type,
+                    difficulty=difficulty
+                )
+        
+        return {"message": "Question updated successfully", "question": question}
+    except Exception as e:
+        if "not found" in str(e):
+            raise HTTPException(status_code=404, detail="Question not found")
         raise HTTPException(status_code=400, detail=str(e))
     
 async def get_all_sections_from_db():

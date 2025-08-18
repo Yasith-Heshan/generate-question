@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from app.services.question_service import createQuestion,add_to_db, add_all_to_db, filter_questions_from_db, get_all_sections_from_db, get_keywords_by_filter, get_question_types_by_section, readContentFromImage
-from app.schemas.question import QuestionGenerateRequestBody, QuestionResponseBody, Question, QuestionFilterRequestBody, TestRequestBody
+from app.services.question_service import createQuestion,add_to_db, add_all_to_db, filter_questions_from_db, get_all_sections_from_db, get_keywords_by_filter, get_question_types_by_section, readContentFromImage, update_question_in_db
+from app.schemas.question import QuestionGenerateRequestBody, QuestionResponseBody, Question, QuestionFilterRequestBody, TestRequestBody, QuestionUpdateRequestBody
 from typing import  List
 
 questionController = APIRouter()
@@ -20,6 +20,10 @@ async def add_all_questions_to_db(questions: List[Question]):
 @questionController.post("/filter_questions", response_model=List[Question])
 async def filter_questions(questionFilterRequestBody: QuestionFilterRequestBody):
     return await filter_questions_from_db(questionFilterRequestBody)
+
+@questionController.put("/questions/{question_id}")
+async def update_question(question_id: str, update_data: QuestionUpdateRequestBody):
+    return await update_question_in_db(question_id, update_data)
 
 @questionController.get("/sections", response_model=List[str])
 async def get_all_sections():

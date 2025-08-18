@@ -41,6 +41,16 @@ class QuestionFilterRequestBody(BaseModel):
     questionType: Optional[str] = None
     difficulty: Optional[int] = None
     keywords: Optional[List[str]] = []
+
+class QuestionUpdateRequestBody(BaseModel):
+    section: Optional[str] = None
+    questionType: Optional[str] = None
+    difficulty: Optional[int] = None
+    question: Optional[str] = None
+    correctAnswer: Optional[str] = None
+    detailedAnswer: Optional[str] = None
+    mcqAnswers: Optional[List[str]] = None
+    keywords: Optional[List[str]] = None
     
     
 class TestRequestBody(BaseModel):
