@@ -1,14 +1,18 @@
 import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import EditIcon from "@mui/icons-material/Edit";
 import { MathJaxContext, MathJax } from "better-react-mathjax";
 import type { QuestionFilterResponseItem } from "../utils/interface";
 
-interface GeneratedQuestionsProps {
-  filteredQuestionResponseItems: QuestionFilterResponseItem[]
+interface FilteredQuestionsProps {
+  filteredQuestionResponseItems: QuestionFilterResponseItem[];
+  onEditQuestion: (question: QuestionFilterResponseItem) => void;
 }
 
 const FilteredQuestions = ({
   filteredQuestionResponseItems,
-}: GeneratedQuestionsProps) => {
+  onEditQuestion,
+}: FilteredQuestionsProps) => {
   if (!filteredQuestionResponseItems || filteredQuestionResponseItems.length === 0) return null;
 
   const config = {
@@ -87,6 +91,18 @@ const FilteredQuestions = ({
                 </h4>
               )}
             </MathJaxContext>
+
+            {/* Edit Button */}
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+              <Button
+                variant="outlined"
+                startIcon={<EditIcon />}
+                onClick={() => onEditQuestion(filteredQuestionResponseItems[index])}
+                size="small"
+              >
+                Edit Question
+              </Button>
+            </Box>
           </Box>
         </Box>
       ))}

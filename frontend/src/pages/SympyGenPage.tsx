@@ -92,6 +92,26 @@ export const SympyGeneratePage = () => {
     setMcqAnswers((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleEditQuestion = (
+    index: number,
+    editedData: {
+      question: string;
+      correctAnswer: string;
+      detailedAnswer?: string;
+      mcqAnswers: string[];
+    }
+  ) => {
+    setQuestions((prev) =>
+      prev.map((q, i) => i === index ? editedData.question : q)
+    );
+    setCorrectAnswers((prev) =>
+      prev.map((a, i) => i === index ? editedData.correctAnswer : a)
+    );
+    setMcqAnswers((prev) =>
+      prev.map((m, i) => i === index ? editedData.mcqAnswers.join(",") : m)
+    );
+  };
+
   const clearState = () => {
     setQuestions([]);
     setCorrectAnswers([]);
@@ -228,6 +248,7 @@ export const SympyGeneratePage = () => {
               correctAnswers={correctAnswers}
               mcqAnswers={mcqAnswers}
               onAddToDB={handleAddToDB}
+              onEditQuestion={handleEditQuestion}
             />
           </Box>
           <Box

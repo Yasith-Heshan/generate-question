@@ -3,6 +3,7 @@ import type {
   QuestionFilterRequestBody,
   QuestionGenerationRequestBody,
   QuestionSaveRequestBody,
+  QuestionUpdateRequestBody,
 } from "../utils/interface";
 
 export const generateQuestion = async (
@@ -57,4 +58,11 @@ export const getQuestionTypesBySection = async (section?: string) => {
 
   const queryString = params.toString();
   return await axios.get(`/api/v1/question_types/filter${queryString ? `?${queryString}` : ""}`);
+}
+
+export const updateQuestion = async (
+  questionId: string,
+  updateData: QuestionUpdateRequestBody
+) => {
+  return await axios.put(`/api/v1/questions/${questionId}`, updateData);
 }

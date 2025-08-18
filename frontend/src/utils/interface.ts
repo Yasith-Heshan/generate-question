@@ -48,6 +48,17 @@ export interface QuestionFilterResponseItem {
   mcqAnswers?: string[];
 }
 
+export interface QuestionUpdateRequestBody {
+  section?: string;
+  questionType?: string;
+  difficulty?: number;
+  question?: string;
+  correctAnswer?: string;
+  detailedAnswer?: string;
+  mcqAnswers?: string[];
+  keywords?: string[];
+}
+
 export interface QuestionFilterResponse {
   questions: QuestionFilterResponseItem[];
 }

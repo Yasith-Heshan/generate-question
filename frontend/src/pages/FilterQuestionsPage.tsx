@@ -11,9 +11,10 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { useState } from "react";
-import type { QuestionFilterRequestBody, QuestionFilterResponseItem } from "../utils/interface";
-import { filterQuestions, getAllSections, getKeywordsByFilter, getQuestionTypesBySection } from "../api/openAiService";
+import type { QuestionFilterRequestBody, QuestionFilterResponseItem, QuestionUpdateRequestBody } from "../utils/interface";
+import { filterQuestions, getAllSections, getKeywordsByFilter, getQuestionTypesBySection, updateQuestion } from "../api/openAiService";
 import FilteredQuestions from "../Components/FilteredQuestions";
+import EditQuestionModal from "../Components/EditQuestionModal";
 import { toast } from "react-toastify";
 
 const FilterQuestionsPage = () => {
@@ -30,6 +31,10 @@ const FilterQuestionsPage = () => {
     const [questionTypes, setQuestionTypes] = useState<string[]>([]);
     const [availableKeywords, setAvailableKeywords] = useState<string[]>([]);
     const [isLoadingOptions, setIsLoadingOptions] = useState(false);
+
+    // Edit modal state
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [selectedQuestionForEdit, setSelectedQuestionForEdit] = useState<QuestionFilterResponseItem | null>(null);
 
     useEffect(() => {
         const fetchOptions = async () => {
@@ -123,6 +128,57 @@ const FilterQuestionsPage = () => {
             alert("Failed to generate questions. Please try again.");
         } finally {
             setIsGenerating(false);
+        }
+    };
+
+    // Handle opening edit modal
+    const handleEditQuestion = (question: QuestionFilterResponseItem) => {
+        setSelectedQuestionForEdit(question);
+        setEditModalOpen(true);
+    };
+
+    // Handle closing edit modal
+    const handleCloseEditModal = () => {
+        setEditModalOpen(false);
+        setSelectedQuestionForEdit(null);
+    };
+
+    // Handle saving edited question
+    const handleSaveEditedQuestion = async (editedData: {
+        question: string;
+        correctAnswer: string;
+        detailedAnswer?: string;
+        mcqAnswers: string[];
+    }) => {
+        if (!selectedQuestionForEdit?.id) {
+            toast.error("No question selected for editing");
+            return;
+        }
+
+        try {
+            const updateData: QuestionUpdateRequestBody = {
+                question: editedData.question,
+                correctAnswer: editedData.correctAnswer,
+                detailedAnswer: editedData.detailedAnswer,
+                mcqAnswers: editedData.mcqAnswers,
+            };
+
+            await updateQuestion(selectedQuestionForEdit.id, updateData);
+
+            // Update the local state
+            setFiltedQuestions(prev =>
+                prev.map(q =>
+                    q.id === selectedQuestionForEdit.id
+                        ? { ...q, ...updateData }
+                        : q
+                )
+            );
+
+            toast.success("Question updated successfully!");
+            handleCloseEditModal();
+        } catch (error) {
+            console.error("Error updating question:", error);
+            toast.error("Failed to update question. Please try again.");
         }
     };
 
@@ -239,6 +295,7 @@ const FilterQuestionsPage = () => {
                     >
                         <FilteredQuestions
                             filteredQuestionResponseItems={filteredQuestions}
+                            onEditQuestion={handleEditQuestion}
                         />
                     </Box>
                     <Box
@@ -256,6 +313,21 @@ const FilterQuestionsPage = () => {
                     </Box>
                 </Box>
             </Grid>
+
+            {/* Edit Question Modal */}
+            {selectedQuestionForEdit && (
+                <EditQuestionModal
+                    open={editModalOpen}
+                    onClose={handleCloseEditModal}
+                    onSave={handleSaveEditedQuestion}
+                    initialData={{
+                        question: selectedQuestionForEdit.question,
+                        correctAnswer: selectedQuestionForEdit.correctAnswer,
+                        detailedAnswer: selectedQuestionForEdit.detailedAnswer,
+                        mcqAnswers: selectedQuestionForEdit.mcqAnswers || [],
+                    }}
+                />
+            )}
         </Grid>
     )
 }
