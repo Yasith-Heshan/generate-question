@@ -87,7 +87,7 @@ def generate_math_word_problem(question_description,count=1,example_question=Non
     Question: <question>
     Detailed_Answer: <detailed_answer> (if detailed_answer is True)
     Answer: <answer>
-    MCQ_Answers: <mcq_answers_list>\\n
+    MCQ_Answers: <mcq_answers_list>
     """
 
     response = client.responses.create(

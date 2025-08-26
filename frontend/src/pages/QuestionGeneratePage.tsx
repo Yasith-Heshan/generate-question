@@ -154,7 +154,7 @@ export const QuestionGeneratePage = () => {
       let tempMcqAnswers: string[] = [];
       if (response.data.mcqAnswers) {
         tempMcqAnswers = (response.data.mcqAnswers as string[]).map(
-          (mcqAnswer) => mcqAnswer.replace(/^\[|\]$/g, '')
+          (mcqAnswer) => mcqAnswer.replace(/^\[|\]|\]\n\n|\]|---$/g, '')
         )
       }
 
