@@ -45,6 +45,7 @@ export const QuestionGeneratePage = () => {
   const [mcqAnswers, setMcqAnswers] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [file, setFile] = useState<File | null>(null)
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
   const [prevResponseId, setPrevResponseId] = useState<string>("");
 
   // State for autocomplete options
@@ -53,7 +54,7 @@ export const QuestionGeneratePage = () => {
   const [keywords, setKeywords] = useState<string[]>([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
 
-  const fileTypes = ["JPG", "PNG", "GIF"];
+  const fileTypes = ["JPG", "JPEG", "PNG", "GIF", "WEBP"];
 
   // Fetch sections and question types on component mount
   useEffect(() => {
@@ -106,6 +107,15 @@ export const QuestionGeneratePage = () => {
     }
   }, [form.section, form.questionType, form.difficulty]);
 
+  // Cleanup image preview URL to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrl) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+    };
+  }, [imagePreviewUrl]);
+
 
 
   // convert file into base64 string
@@ -119,7 +129,17 @@ export const QuestionGeneratePage = () => {
   };
 
   const handleFileChange = async (file: File) => {
+    // Clean up previous preview URL if it exists
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl);
+    }
+
     setFile(file);
+
+    // Create preview URL for the image
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreviewUrl(previewUrl);
+
     const base64String = await convertFileToBase64(file);
     let desc = form.description
     if (desc == "") {
@@ -128,6 +148,20 @@ export const QuestionGeneratePage = () => {
     setForm({
       ...form, image: base64String, description: desc
     })
+  }
+
+  const handleRemoveFile = () => {
+    // Clean up preview URL
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl);
+    }
+
+    setFile(null);
+    setImagePreviewUrl(null);
+    setForm((prev) => ({
+      ...prev,
+      image: undefined,
+    }));
   }
 
 
@@ -400,14 +434,45 @@ export const QuestionGeneratePage = () => {
                     cursor: "pointer",
                   }}
                 >
-                  {file ? (
-                    <p>{file.name}</p>
-                  ) : (
+                  {file ? (<p>{file.name}</p>) : (
                     <p>Drag and drop an image file here, or click to select</p>
                   )}
                 </Box>
               }
             />
+            {file && (
+              <Box>
+                <Stack direction="column" justifyContent="center" alignItems="center" sx={{ mb: 1 }}>
+                  {imagePreviewUrl && (
+                    <Box sx={{ mt: 2 }}>
+                      <img
+                        src={imagePreviewUrl}
+                        alt="Preview"
+                        style={{
+                          maxWidth: "100%",
+                          maxHeight: "200px",
+                          objectFit: "contain",
+                          border: "1px solid #ddd",
+                          borderRadius: "4px",
+                        }}
+                      />
+                    </Box>
+                  )}
+                  <Button
+                    size="small"
+                    color="error"
+                    variant="outlined"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent triggering file upload
+                      handleRemoveFile();
+                    }}
+                  >
+                    Remove
+                  </Button>
+                </Stack>
+
+              </Box>
+            )}
 
             <Stack direction="row" alignItems="center">
               <Switch
