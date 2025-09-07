@@ -24,7 +24,7 @@ def extract_questions(text):
     'Question: <question>'
     Returns a list of question strings.
     """
-    pattern = r"Question:\s*(.*?)(?=\nAnswer:|\Z)"
+    pattern = r"Question:\s*(.*?)(?=\nDetailed_Answer:|\nAnswer:|\Z)"
     matches = re.findall(pattern, text, re.DOTALL)
     # Strip whitespace from each question
     return [q.strip() for q in matches]
@@ -46,12 +46,31 @@ def extract_answers(text):
     """
     Extracts all answers from the given text that follow the format:
     'Answer: <answer>'
-    Returns a list of answer strings.
+    Returns a list of answer strings (only the final answer value, not the full solution).
     """
+    # Extract everything from "Answer:" until "MCQ_Answers:" or end of string
     pattern = r"Answer:\s*(.*?)(?=\nMCQ_Answers:|\Z)"
     matches = re.findall(pattern, text, re.DOTALL)
-    # Strip whitespace from each answer
-    return [a.strip() for a in matches]
+    
+    final_answers = []
+    for match in matches:
+        # Clean up the match and extract only the numerical answer
+        lines = match.strip().split('\n')
+        # Look for the line that contains a percentage or number (the final answer)
+        for line in reversed(lines):  # Start from the end to get the final answer
+            line = line.strip()
+            if line and (re.search(r'^\d+\.?\d*%?$', line) or re.search(r'^\d+\.\d+%$', line) or re.search(r'^\d+%$', line)):
+                final_answers.append(line)
+                break
+        else:
+            # If no clear numerical answer found, take the last non-empty line
+            for line in reversed(lines):
+                line = line.strip()
+                if line:
+                    final_answers.append(line)
+                    break
+    
+    return final_answers
 
 def extract_mcq_answers(text):
     """
@@ -107,7 +126,7 @@ def generate_math_word_problem(question_description,count=1,example_question=Non
     OUTPUT FORMAT (MUST FOLLOW EXACTLY):
     Question: <question>
     Detailed_Answer: <detailed_answer> (if detailed_answer is True)
-    Answer: <answer>
+    Answer: <final_answer_only> (Only the final numerical answer with units, no explanation or working)
     MCQ_Answers: [<mcq_answer1>, <mcq_answer2>, <mcq_answer3>, <mcq_answer4>]
 
     Generate ONLY the mathematical content following the exact format above. Do not include any explanatory text, headers, or additional formatting.
