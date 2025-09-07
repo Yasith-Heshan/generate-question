@@ -21,8 +21,8 @@ pull:
 	git pull
 help:
 	@echo "Available commands:"
-	@echo "  make up     - Start the Docker containers"
-	@echo "  make down   - Stop the Docker containers"
+	@echo "  make run     - Start the Docker containers"
+	@echo "  make stop   - Stop the Docker containers"
 	@echo "  make restart - Restart the Docker containers"
 	@echo "  make build  - Build the Docker images"
 	@echo "  make pull   - Pull the latest changes from the repository"
