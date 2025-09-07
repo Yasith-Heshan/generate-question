@@ -74,20 +74,43 @@ def generate_math_word_problem(question_description,count=1,example_question=Non
     # Define the math prompt
     math_problem_count = "a math problem" if count == 1 else f"{count} math problems"
     math_prompt = f"""
-    Create {math_problem_count} according to the following description:
-    {question_description}
+    Create {math_problem_count} based on the following requirements:
+
+    DESCRIPTION: {question_description}
     {imageToText if image else ""}
-    {"Example question: " + example_question if example_question else ""}
-    {"Generate question in the same format as the previous response." if prevResponseId else ""}
-    Give only the question, answer and suitable 4 mcq asnwers other than the correct answer.
-    MCQ answers should be in the format: MCQ_Answers: [<mcq_answer1>, <mcq_answer2>, <mcq_answer3>, <mcq_answer4>]
-    Use different letters for the variable: x, y, t, u, v, z, r, s (choose the variable randomly) and f, g, h, p, q, r for the function names.
-    Make sure that they do not evaluate to negative square roots, logs of negative numbers, etc.
-    Always use latex for math expressions (Use \\left( and  \\right) for parenthesis). Use the format:
+    {"EXAMPLE TO FOLLOW: " + example_question if example_question else ""}
+    {"IMPORTANT: Generate questions in the exact same format and style as the previous response." if prevResponseId else ""}
+
+    MATHEMATICAL REQUIREMENTS:
+    - Ensure all mathematical expressions are valid and well-defined
+    - Avoid operations that lead to undefined results (negative square roots, logarithms of negative numbers, division by zero, etc.)
+    - Use realistic and reasonable numerical values that make sense in context
+    - Verify that all calculations are mathematically sound
+
+    VARIABLE AND FUNCTION NAMING:
+    - Variables: Choose randomly from x, y, t, u, v, z, r, s (use different variables for variety)
+    - Functions: Choose randomly from f, g, h, p, q, r (use different function names for variety)
+    - Ensure variable names are contextually appropriate
+
+    MCQ ANSWER REQUIREMENTS:
+    - Generate exactly 4 incorrect multiple-choice options that are plausible but wrong
+    - Make incorrect answers mathematically reasonable (not obviously wrong)
+    - Ensure incorrect answers are distinct from each other and the correct answer
+    - Use similar formatting and units as the correct answer
+
+    FORMATTING REQUIREMENTS:
+    - Use LaTeX for ALL mathematical expressions (equations, formulas, numbers with operations)
+    - Use \\left( and \\right) for parentheses in LaTeX
+    - Ensure proper LaTeX syntax for fractions, exponents, radicals, etc.
+    - Keep consistent spacing and formatting throughout
+
+    OUTPUT FORMAT (MUST FOLLOW EXACTLY):
     Question: <question>
     Detailed_Answer: <detailed_answer> (if detailed_answer is True)
     Answer: <answer>
-    MCQ_Answers: <mcq_answers_list>
+    MCQ_Answers: [<mcq_answer1>, <mcq_answer2>, <mcq_answer3>, <mcq_answer4>]
+
+    Generate ONLY the mathematical content following the exact format above. Do not include any explanatory text, headers, or additional formatting.
     """
 
     response = client.responses.create(
