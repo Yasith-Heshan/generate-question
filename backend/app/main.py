@@ -2,10 +2,13 @@ from fastapi import FastAPI
 from app.api.v1.question_controller import questionController
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import init_db
+import os
 
-
+APP_ENV = os.getenv("APP_ENV", "development")
 
 app = FastAPI(title="Simple FastAPI App")
+
+print(f"Starting application in {APP_ENV} mode.")
 
 @app.on_event("startup")
 async def start_db():
@@ -14,8 +17,10 @@ async def start_db():
 
 
 origins = [
-    "http://localhost:5173",  # React dev server
+    os.getenv("FRONTEND_URL", "http://localhost:5173"),  # React dev server
 ]
+
+print(f"Allowed CORS origins: {origins}")
 
 # Add CORS middleware to FastAPI
 app.add_middleware(
