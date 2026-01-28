@@ -17,6 +17,7 @@ services:
     container_name: generate-question-frontend
     build:
       context: ./frontend
+      dockerfile: Dockerfile.prod
     ports:
       - "5173:5173"
     volumes:

@@ -128,7 +128,15 @@ export const QuestionGeneratePage = () => {
     });
   };
 
-  const handleFileChange = async (file: File) => {
+  const handleFileChange = async (input: File | File[]) => {
+    let file: File;
+    if (Array.isArray(input)) {
+      if (input.length === 0) return;
+      file = input[0];
+    } else {
+      file = input;
+    }
+
     // Clean up previous preview URL if it exists
     if (imagePreviewUrl) {
       URL.revokeObjectURL(imagePreviewUrl);
@@ -141,14 +149,14 @@ export const QuestionGeneratePage = () => {
     setImagePreviewUrl(previewUrl);
 
     const base64String = await convertFileToBase64(file);
-    let desc = form.description
-    if (desc == "") {
+    let desc = form.description;
+    if (desc === "") {
       desc = "Image content:";
     }
     setForm({
       ...form, image: base64String, description: desc
-    })
-  }
+    });
+  }  
 
   const handleRemoveFile = () => {
     // Clean up preview URL
