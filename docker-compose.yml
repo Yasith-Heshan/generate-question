@@ -29,3 +29,17 @@ services:
       - ./frontend/.env
     depends_on:
       - backend
+
+  sympy:
+    container_name: generate-question-sympy
+    build:
+      context: ./sympy
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./sympy:/app
+      - /app/venv
+    environment:
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - ./sympy/.env
