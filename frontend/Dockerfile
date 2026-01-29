@@ -13,8 +13,8 @@ RUN npm install --legacy-peer-deps
 # Copy the rest of the app
 COPY . .
 
-# Expose Vite default port
-EXPOSE 5173
+# Expose Vite port
+EXPOSE 5174
 
 # Start Vite in dev mode, watching for file changes
 COPY entrypoint.sh /entrypoint.sh

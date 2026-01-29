@@ -11,5 +11,5 @@ FROM node:20-slim
 WORKDIR /app
 RUN npm install -g serve
 COPY --from=build /app/dist ./dist
-EXPOSE 5173
-CMD ["serve", "dist", "--single", "--listen", "5173"]
+EXPOSE 5174
+CMD ["serve", "dist", "--single", "--listen", "5174"]
