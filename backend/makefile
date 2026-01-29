@@ -4,10 +4,10 @@ build:
 	docker build -t math-backend .
 
 run:
-	docker run --rm -p 8000:8000 math-backend
+	docker run --rm -p 8001:8001 math-backend
 
 run-d:
-	docker run --rm -d -p 8000:8000 math-backend
+	docker run --rm -d -p 8001:8001 math-backend
 
 help:
 	@echo "Available commands:"
