@@ -13,7 +13,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const drawerWidth = 240;
 const navItems = [
@@ -24,6 +24,7 @@ const navItems = [
 
 export default function DrawerAppBar() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const location = useLocation();
 
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
@@ -36,15 +37,21 @@ export default function DrawerAppBar() {
       </Typography>
       <Divider />
       <List>
-        {navItems.map((item, index) => (
-          <ListItem key={index} disablePadding>
-            <Link to={item.path} style={{ textDecoration: "none", color: "inherit" }}>
-              <ListItemButton sx={{ textAlign: "center" }}>
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </Link>
-          </ListItem>
-        ))}
+        {navItems.map((item, index) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <ListItem key={index} disablePadding>
+              <Link to={item.path} style={{ textDecoration: "none", color: "inherit" }}>
+                <ListItemButton sx={{ textAlign: "center" }}>
+                  <ListItemText
+                    primary={item.name}
+                    primaryTypographyProps={{ fontWeight: isActive ? 'bold' : 'normal' }}
+                  />
+                </ListItemButton>
+              </Link>
+            </ListItem>
+          );
+        })}
       </List>
     </Box>
   );
@@ -71,18 +78,23 @@ export default function DrawerAppBar() {
             MATHSUP
           </Typography>
           <Box sx={{ display: { xs: "none", sm: "block" } }}>
-            {navItems.map((item, index) => (
-
-              <Link
-                to={item.path}
-                key={index}
-                style={{ textDecoration: "none", color: "#fff" }}
-              >
-                <Button key={index} sx={{ color: "#fff" }}>
-                  {item.name}
-                </Button>
-              </Link>
-            ))}
+            {navItems.map((item, index) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  to={item.path}
+                  key={index}
+                  style={{ textDecoration: "none", color: "#fff" }}
+                >
+                  <Button
+                    key={index}
+                    sx={{ color: "#fff", fontWeight: isActive ? 'bold' : 'normal' }}
+                  >
+                    {item.name}
+                  </Button>
+                </Link>
+              );
+            })}
           </Box>
         </Toolbar>
       </AppBar>
