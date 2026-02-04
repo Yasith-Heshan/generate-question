@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 5174
 
 # Start Vite in dev mode, watching for file changes
-RUN ["npm", "run", "dev"]
+CMD ["npm", "run", "dev"]
