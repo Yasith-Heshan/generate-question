@@ -1,6 +1,7 @@
 # Ignore .env files in frontend and backend
 /frontend/.env
 /backend/.env
+/backend/maths
 /frontend/node_modules
 /backend/venv
 /backend/__pycache__
