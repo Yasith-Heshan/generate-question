@@ -3,6 +3,7 @@
 /backend/.env
 /frontend/node_modules
 /backend/venv
+/backend/maths
 /backend/__pycache__
 /backend/*.pyc
 **/__pycache__/
