@@ -17,6 +17,4 @@ COPY . .
 EXPOSE 5174
 
 # Start Vite in dev mode, watching for file changes
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+RUN ["npm", "run", "dev"]
