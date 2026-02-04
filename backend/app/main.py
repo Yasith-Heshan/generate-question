@@ -6,9 +6,17 @@ import os
 
 APP_ENV = os.getenv("APP_ENV", "development")
 
-app = FastAPI(title="Simple FastAPI App")
+app = FastAPI(
+    title="Math Question Generator API",
+    description="API for generating and managing mathematical questions with AI assistance",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
 
 print(f"Starting application in {APP_ENV} mode.")
+print("Swagger documentation available at: http://localhost:8001/docs")
+print("ReDoc documentation available at: http://localhost:8001/redoc")
 
 @app.on_event("startup")
 async def start_db():
