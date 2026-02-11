@@ -259,7 +259,7 @@ async def add_to_db(
 async def add_all_to_db(questions: list[Question]):
     try:
         await QuestionModel.insert_many([QuestionModel(**q.dict()) for q in questions])
-        
+
         # Insert keywords for all questions
         for question in questions:
             if question.keywords:
@@ -374,8 +374,12 @@ async def get_keywords_by_filter(section: str = None, questionType: str = None, 
         if difficulty is not None:
             filters["difficulty"] = difficulty
         
-        keywords = await KeywordModel.find(filters).to_list()
-        return [keyword.keyword for keyword in keywords]
+        questions = await QuestionModel.find(filters).to_list()
+        keys=[]
+        for a in questions:
+            keys+= a.keywords if a.keywords else []
+        keys = set(keys)
+        return list(keys)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -389,7 +393,7 @@ async def get_question_types_by_section(section: str = None):
             filters["section"] = section
         
         # Use the same working pattern as other endpoints
-        keywords = await KeywordModel.find(filters).to_list()
+        keywords = await QuestionModel.find(filters).to_list()
         question_types = sorted(list(set([keyword.questionType for keyword in keywords])))
         
         return question_types

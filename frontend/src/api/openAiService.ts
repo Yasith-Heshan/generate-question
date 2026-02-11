@@ -12,6 +12,8 @@ export const generateQuestion = async (
   return await axios.post("/api/v1/questions", questionGenerationRequestBody);
 };
 
+
+
 export const saveQuestion = async (
   questionSaveRequestBody: QuestionSaveRequestBody
 ) => {
@@ -22,6 +24,15 @@ export const saveAllQuestions = async (
   questions: QuestionSaveRequestBody[]
 ) => {
   return await axios.post("/api/v1/add_all_questions", questions);
+};
+
+export const deleteQuestion = async (questionId: string) => {
+  try {
+    return await axios.delete(`/api/v1/questions/${questionId}`);
+  } catch (error) {
+    console.error("Error deleting question:", error);
+    throw error;
+  }
 };
 
 export const filterQuestions = async (

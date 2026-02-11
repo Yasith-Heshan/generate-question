@@ -85,3 +85,42 @@ class MongoDBAdapter:
         except Exception as e:
             print(f"Error inserting multiple questions: {e}")
             raise e
+
+    @classmethod
+    async def distinct_query(cls, collection, key) -> List[str]:
+        db = cls.get_db()
+        return await db[collection].distinct(key)
+    
+    @classmethod
+    async def query_documents(
+        cls,
+        collection_name: str,
+        query: Optional[Dict[str, Any]] = None,
+        projection: Optional[Dict[str, Any]] = None,
+        limit: Optional[int] = None,
+        skip: int = 0,
+        sort: Optional[List[tuple]] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        General-purpose function to query documents from any collection.
+        
+        :param collection_name: Name of MongoDB collection
+        :param query: MongoDB query dictionary
+        :param projection: Fields to include or exclude
+        :param limit: Max number of documents
+        :param skip: Number of documents to skip (pagination)
+        :param sort: List of tuples [(field, direction)], e.g., [("difficulty", 1)]
+        :return: List of documents
+        """
+        db = cls.get_db()
+        query = query or {}
+        cursor = db[collection_name].find(query, projection)
+
+        if sort:
+            cursor = cursor.sort(sort)
+        if skip:
+            cursor = cursor.skip(skip)
+        if limit:
+            cursor = cursor.limit(limit)
+
+        return await cursor.to_list(length=None)

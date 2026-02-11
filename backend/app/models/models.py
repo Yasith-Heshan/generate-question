@@ -10,6 +10,7 @@ class QuestionModel(Document):
     detailedAnswer: Optional[str] = None
     mcqAnswers: Optional[list[str]] = []
     keywords: Optional[list[str]] = []  # Add keywords field to the model
+    is_deleted: Optional[bool] = False
 
     class Settings:
         name = "questions"  # Collection name
