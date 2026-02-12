@@ -1,8 +1,11 @@
-from fastapi import APIRouter
+from bson import ObjectId
+from fastapi import APIRouter, HTTPException
 from app.services.question_service import createQuestion,add_to_db, add_all_to_db, filter_questions_from_db, get_all_sections_from_db, get_keywords_by_filter, get_question_types_by_section, readContentFromImage, update_question_in_db
 from app.schemas.question import QuestionGenerateRequestBody, QuestionResponseBody, Question, QuestionFilterRequestBody, TestRequestBody, QuestionUpdateRequestBody
 from typing import  List
+from app.adapters.db_adapter import MongoDBAdapter
 
+MongoDBAdapter.connect()
 questionController = APIRouter()
 
 @questionController.post("/questions", response_model=QuestionResponseBody, summary="Generate Questions", description="Generate mathematical questions based on the provided parameters", tags=["Question Generation"])
@@ -27,7 +30,18 @@ async def update_question(question_id: str, update_data: QuestionUpdateRequestBo
 
 @questionController.get("/sections", response_model=List[str], summary="Get All Sections", description="Retrieve all available question sections", tags=["Metadata"])
 async def get_all_sections():
-    return await get_all_sections_from_db()
+    return await MongoDBAdapter.distinct_query('questions', 'section')
+
+@questionController.delete("/questions/{question_id}")
+async def delete(question_id):
+    db = MongoDBAdapter.get_db()
+    x=ObjectId(question_id)
+    result = await db["questions"].delete_one({"_id": x})
+
+    if result.deleted_count == 0:
+        print('not found')
+        raise HTTPException(status_code=404, detail="Question not found")
+    return {"message": "Question deleted successfully"}
 
 @questionController.get("/keywords/filter", response_model=List[str], summary="Get Keywords by Filter", description="Get keywords filtered by section, question type, and difficulty", tags=["Metadata"])
 async def get_keywords_filtered(section: str = None, questionType: str = None, difficulty: int = None):

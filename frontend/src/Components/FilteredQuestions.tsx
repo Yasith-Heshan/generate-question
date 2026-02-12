@@ -1,13 +1,43 @@
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { MathJaxContext, MathJax } from "better-react-mathjax";
 import type { QuestionFilterResponseItem } from "../utils/interface";
+import { deleteQuestion } from "../api/openAiService";
 
 interface FilteredQuestionsProps {
   filteredQuestionResponseItems: QuestionFilterResponseItem[];
   onEditQuestion: (question: QuestionFilterResponseItem) => void;
 }
+//TODO
+const onDeleteQuestion = async (question: QuestionFilterResponseItem) => {
+  if (!question.id) {
+    console.error("Question ID is missing");
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Are you sure you want to delete question ID ${question.id}?`
+  );
+  if (!confirmed) return;
+
+  try {
+    await deleteQuestion(question.id); // <-- use your helper function
+    alert(`Question ID ${question.id} deleted successfully!`);
+
+    // Remove the deleted question from the local state
+    // setFilteredQuestions(prev =>
+    //   prev.filter(q => q.id !== question.id)
+    // );
+
+  } catch (err: any) {
+    console.error("Error deleting question:", err);
+    alert(err.response?.data?.detail || "Something went wrong while deleting the question.");
+  }
+};
+
+
 
 const FilteredQuestions = ({
   filteredQuestionResponseItems,
@@ -101,6 +131,14 @@ const FilteredQuestions = ({
                 size="small"
               >
                 Edit Question
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<DeleteIcon />}
+                onClick={() => onDeleteQuestion(filteredQuestionResponseItems[index])}
+                size="small"
+              >
+                Delete Question
               </Button>
             </Box>
           </Box>
