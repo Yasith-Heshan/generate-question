@@ -17,12 +17,12 @@ services:
     container_name: generate-question-frontend
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     ports:
       - "5174:5174"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+    # volumes:
+    #   - ./frontend:/app
+    #   - /app/node_modules
     environment:
       - CHOKIDAR_USEPOLLING=true
     env_file:
