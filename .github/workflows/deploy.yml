@@ -17,6 +17,5 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            ls
-            cd /generate-question
+            cd generate-question/
             make pull buid stop run
