@@ -270,6 +270,9 @@ export const QuestionGeneratePage = () => {
         questionType: form.questionType,
         difficulty: form.difficulty,
         keywords: form.keywords,
+        // attach responseId from the most recent generation so backend can
+        // record which batch produced this question
+        responseId: prevResponseId,
       } as QuestionSaveRequestBody);
       removeAddedQuestion(generatedQuestionInfo.index);
       toast.success("Question added to the database successfully!");
@@ -293,6 +296,7 @@ export const QuestionGeneratePage = () => {
         correctAnswer: correctAnswers[index],
         mcqAnswers: mcqAnswers[index].split(",") || [],
         keywords: form.keywords,
+        responseId: prevResponseId,
       } as QuestionSaveRequestBody)
     );
     try {

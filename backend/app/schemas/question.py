@@ -35,6 +35,7 @@ class Question(BaseModel):
     detailedAnswer: Optional[str] = None
     mcqAnswers: Optional[List[str]] = []
     keywords: Optional[List[str]] = []  # Optional field for keywords associated with the question
+    responseId: Optional[str] = None  # Store the generation response ID
     
 class QuestionFilterRequestBody(BaseModel):
     section:Optional[str] = None
