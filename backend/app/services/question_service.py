@@ -274,23 +274,50 @@ async def add_all_to_db(questions: list[Question]):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
-async def filter_questions_from_db(questionFilterRequestBody: QuestionFilterRequestBody):
-    try:
-        filters = {}
+async def _build_filters(questionFilterRequestBody: QuestionFilterRequestBody) -> dict:
+    """Construct a MongoDB filter dict from the request body."""
+    filters = {}
+    if questionFilterRequestBody.section:
+        filters["section"] = questionFilterRequestBody.section
+    if questionFilterRequestBody.questionType:
+        filters["questionType"] = questionFilterRequestBody.questionType
+    if questionFilterRequestBody.difficulty is not None:
+        filters["difficulty"] = questionFilterRequestBody.difficulty
+    if questionFilterRequestBody.keywords:
+        filters["keywords"] = {"$in": questionFilterRequestBody.keywords}
+    if questionFilterRequestBody.id:
+        from beanie import PydanticObjectId
+        filters["_id"] = PydanticObjectId(questionFilterRequestBody.id)
+    return filters
 
-        if questionFilterRequestBody.section:
-            filters["section"] = questionFilterRequestBody.section
-        if questionFilterRequestBody.questionType:
-            filters["questionType"] = questionFilterRequestBody.questionType
-        if questionFilterRequestBody.difficulty is not None:
-            filters["difficulty"] = questionFilterRequestBody.difficulty
-        if questionFilterRequestBody.keywords:
-            filters["keywords"] = {"$in": questionFilterRequestBody.keywords}
-        if questionFilterRequestBody.id:
-            from beanie import PydanticObjectId
-            filters["_id"] = PydanticObjectId(questionFilterRequestBody.id)
+
+async def filter_questions_from_db(questionFilterRequestBody: QuestionFilterRequestBody):
+    """Return all questions matching the filters (no pagination)."""
+    try:
+        filters = await _build_filters(questionFilterRequestBody)
         questions = await QuestionModel.find(filters).to_list()
         return questions
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+async def filter_questions_paginated(questionFilterRequestBody: QuestionFilterRequestBody):
+    """Return paginated questions with metadata; used by new internal endpoint."""
+    try:
+        filters = await _build_filters(questionFilterRequestBody)
+        page = questionFilterRequestBody.page or 1
+        limit = questionFilterRequestBody.limit or 10
+        skip = (page - 1) * limit
+
+        total = await QuestionModel.find(filters).count()
+        questions = await QuestionModel.find(filters).skip(skip).limit(limit).to_list()
+
+        return {
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "questions": questions,
+        }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

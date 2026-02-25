@@ -43,6 +43,8 @@ class QuestionFilterRequestBody(BaseModel):
     difficulty: Optional[int] = None
     keywords: Optional[List[str]] = []
     id: Optional[str] = None  # Optional field for filtering by question ID
+    page: Optional[int] = 1
+    limit: Optional[int] = 10
 
 class QuestionUpdateRequestBody(BaseModel):
     section: Optional[str] = None
@@ -55,5 +57,11 @@ class QuestionUpdateRequestBody(BaseModel):
     keywords: Optional[List[str]] = None
     
     
+class PaginatedQuestionsResponse(BaseModel):
+    total: int
+    page: int
+    limit: int
+    questions: List[Question]
+
 class TestRequestBody(BaseModel):
     img: str  # Assuming the image is passed as a base64 string or a URL
