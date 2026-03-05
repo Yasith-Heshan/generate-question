@@ -133,7 +133,7 @@ def generate_math_word_problem(question_description,count=1,example_question=Non
     """
 
     response = client.responses.create(
-        model="gpt-4.1",
+        model="gpt-5.2",
         # reasoning={"effort": "medium"},
         input=math_prompt,
         previous_response_id=prevResponseId,  # Use the previous response ID if provided
