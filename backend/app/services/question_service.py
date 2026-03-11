@@ -1,3 +1,5 @@
+import json
+
 from app.schemas.question import QuestionGenerateRequestBody, QuestionResponseBody,Question, QuestionFilterRequestBody, QuestionUpdateRequestBody
 import openai
 from dotenv import load_dotenv
@@ -35,11 +37,13 @@ def get_detailed_answers(questions: list[str]):
     detailed_answers = []
     for question in questions:
         prompt = f"Provide a detailed answer for the following question:\n{question}"
-        response = client.responses.create(
-            model="gpt-4.1",
-            input=prompt,
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
         )
-        detailed_answers.append(response.output_text.strip())
+        detailed_answers.append(response.choices[0].message.content.strip())
     return detailed_answers if detailed_answers else []
 
 def extract_answers(text):
@@ -93,44 +97,61 @@ def generate_math_word_problem(question_description,count=1,example_question=Non
     # Define the math prompt
     math_problem_count = "a math problem" if count == 1 else f"{count} math problems"
     math_prompt = f"""
-    Create {math_problem_count} based on the following requirements:
+        Create {math_problem_count} based on the following requirements:
 
-    DESCRIPTION: {question_description}
-    {imageToText if image else ""}
-    {"EXAMPLE TO FOLLOW: " + example_question if example_question else ""}
-    {"IMPORTANT: Generate questions in the exact same format and style as the previous response." if prevResponseId else ""}
+        DESCRIPTION: {question_description}
+        {imageToText if image else ""}
+        {"EXAMPLE TO FOLLOW: " + example_question if example_question else ""}
+        {"IMPORTANT: Generate questions in the exact same format and style as the previous response." if prevResponseId else ""}
 
-    MATHEMATICAL REQUIREMENTS:
-    - Ensure all mathematical expressions are valid and well-defined
-    - Avoid operations that lead to undefined results (negative square roots, logarithms of negative numbers, division by zero, etc.)
-    - Use realistic and reasonable numerical values that make sense in context
-    - Verify that all calculations are mathematically sound
+        MATHEMATICAL REQUIREMENTS:
+        - Ensure all mathematical expressions are valid and well-defined
+        - Avoid operations that lead to undefined results
+        - Use realistic and reasonable numerical values
+        - Verify that all calculations are mathematically sound
 
-    VARIABLE AND FUNCTION NAMING:
-    - Variables: Choose randomly from x, y, t, u, v, z, r, s (use different variables for variety)
-    - Functions: Choose randomly from f, g, h, p, q, r (use different function names for variety)
-    - Ensure variable names are contextually appropriate
+        VARIABLE AND FUNCTION NAMING:
+        - Variables: Choose randomly from x, y, t, u, v, z, r, s
+        - Functions: Choose randomly from f, g, h, p, q, r
 
-    MCQ ANSWER REQUIREMENTS:
-    - Generate exactly 4 incorrect multiple-choice options that are plausible but wrong
-    - Make incorrect answers mathematically reasonable (not obviously wrong)
-    - Ensure incorrect answers are distinct from each other and the correct answer
-    - Use similar formatting and units as the correct answer
+        MCQ ANSWER REQUIREMENTS:
+        - Generate exactly 4 incorrect multiple-choice options that are plausible but wrong
+        - Make incorrect answers mathematically reasonable
+        - Ensure incorrect answers are distinct
 
-    FORMATTING REQUIREMENTS:
-    - Use LaTeX for ALL mathematical expressions (equations, formulas, numbers with operations)
-    - Use \\left( and \\right) for parentheses in LaTeX
-    - Ensure proper LaTeX syntax for fractions, exponents, radicals, etc.
-    - Keep consistent spacing and formatting throughout
+        FORMATTING REQUIREMENTS:
+        - Use LaTeX for all mathematical expressions
+        - Use \\left( and \\right) for parentheses in LaTeX
 
-    OUTPUT FORMAT (MUST FOLLOW EXACTLY):
-    Question: <question>
-    Detailed_Answer: <detailed_answer> (if detailed_answer is True)
-    Answer: <final_answer_only> (Only the final numerical answer with units, no explanation or working)
-    MCQ_Answers: [<mcq_answer1>, <mcq_answer2>, <mcq_answer3>, <mcq_answer4>]
+        Return ONLY valid JSON.
 
-    Generate ONLY the mathematical content following the exact format above. Do not include any explanatory text, headers, or additional formatting.
-    """
+        If count == 1, return this exact JSON shape:
+        {{
+        "Question": "string",
+        "Detailed_Answer": "string",
+        "Answer": "string",
+        "MCQ_Answers": ["string", "string", "string", "string"]
+        }}
+
+        If count > 1, return this exact JSON shape:
+        {{
+        "items": [
+            {{
+            "Question": "string",
+            "Detailed_Answer": "string",
+            "Answer": "string",
+            "MCQ_Answers": ""string", "string", "string", "string""
+            }}
+        ]
+        }}
+
+        Do not return markdown.
+        Do not wrap the JSON in triple backticks.
+        Do not add explanations.
+        """
+    if prevResponseId is "":
+        prevResponseId = None
+    
 
     response = client.responses.create(
         model="gpt-5.2",
@@ -138,13 +159,30 @@ def generate_math_word_problem(question_description,count=1,example_question=Non
         input=math_prompt,
         previous_response_id=prevResponseId,  # Use the previous response ID if provided
     )
+    content = response.output_text
+    data = json.loads(content)
+    if 'items' in data:
+        # Multiple questions
+        questions = [item.get('Question', '') for item in data['items']]
+        answers = [item.get('Detailed_Answer', '') for item in data['items']]
+        final_answers = [item.get('Answer', '') for item in data['items']]
+        
+        # Flatten all MCQ answers into one list
+        
+        mcq_answers_list = [
+            ', '.join(item.get('MCQ_Answers', ""))
+            for item in data['items']
+        ]
+    else:
+        # Single question
+        questions = [data.get('Question', '')]
+        answers = [data.get('Detailed_Answer', '')]
+        final_answers = [data.get('Answer', '')]
+        
+        # Already a list[str]
+        mcq_answers_list = [','.join(data.get('MCQ_Answers', ''))]
     
-    
-    # extract the generated question from the response
-    questions = extract_questions(response.output_text)
-    answers = extract_answers(response.output_text)
-    mcq_answers = extract_mcq_answers(response.output_text)
-    return questions,answers, mcq_answers, response.id
+    return questions, final_answers, mcq_answers_list, response.id
 
 def readContentFromImage(imageBase64: str) -> str:
     """
