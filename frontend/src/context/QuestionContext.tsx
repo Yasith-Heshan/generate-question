@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode, Dispatch, SetStateAction } from "react";
+import type { QuestionGenerationRequestBody } from "../utils/interface";
 
 interface QuestionState {
   questions: string[];
@@ -7,6 +8,7 @@ interface QuestionState {
   detailedAnswers: string[];
   mcqAnswers: string[];
   prevResponseId: string;
+  form: QuestionGenerationRequestBody;
 }
 
 interface QuestionContextType extends QuestionState {
@@ -15,6 +17,7 @@ interface QuestionContextType extends QuestionState {
   setDetailedAnswers: Dispatch<SetStateAction<string[]>>;
   setMcqAnswers: Dispatch<SetStateAction<string[]>>;
   setPrevResponseId: Dispatch<SetStateAction<string>>;
+  setForm: Dispatch<SetStateAction<QuestionGenerationRequestBody>>;
   clearQuestions: () => void;
 }
 
@@ -47,6 +50,15 @@ export function QuestionProvider({ children }: { children: ReactNode }) {
   const [detailedAnswers, setDetailedAnswers] = usePersistedState<string[]>("gq_detailedAnswers", []);
   const [mcqAnswers, setMcqAnswers] = usePersistedState<string[]>("gq_mcqAnswers", []);
   const [prevResponseId, setPrevResponseId] = usePersistedState<string>("gq_prevResponseId", "");
+  const [form, setForm] = usePersistedState<QuestionGenerationRequestBody>("gq_form", {
+    section: "",
+    description: "",
+    count: 1,
+    questionType: "",
+    difficulty: 1,
+    detailedAnswer: false,
+    keywords: [],
+  });
 
   const clearQuestions = () => {
     setQuestions([]);
@@ -62,11 +74,13 @@ export function QuestionProvider({ children }: { children: ReactNode }) {
         detailedAnswers,
         mcqAnswers,
         prevResponseId,
+        form,
         setQuestions,
         setCorrectAnswers,
         setDetailedAnswers,
         setMcqAnswers,
         setPrevResponseId,
+        setForm,
         clearQuestions,
       }}
     >

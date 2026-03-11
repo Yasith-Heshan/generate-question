@@ -5,37 +5,70 @@ import {
   Button,
   Stack,
   CircularProgress,
-  Checkbox
+  Checkbox,
+  Autocomplete
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import GeneratedQuestions from "../Components/GeneratedQeustions";
 import type {
   GeneratedQuestionInfo,
   QuestionSaveRequestBody,
-  SympyGeneratorRequestBody,
   SympyGeneratorResponseItem,
 } from "../utils/interface";
 import {
   generateQuestion,
 } from "../api/sympyService";
 import { toast } from "react-toastify";
-import { saveQuestion, saveAllQuestions } from "../api/openAiService";
+import { saveQuestion, saveAllQuestions, getAllSections, getQuestionTypesBySection } from "../api/openAiService";
 import { useSympyQuestions } from "../context/SympyContext";
 
 export const SympyGeneratePage = () => {
-  const [form, setForm] = useState<SympyGeneratorRequestBody>({
-    section: "",
-    question_type: "",
-    difficulty: 1,
-    questions_count: 1,
-    mcq: false,
-  })
-
-  const { questions, setQuestions, correctAnswers, setCorrectAnswers, mcqAnswers, setMcqAnswers, graphImages, setGraphImages, clearQuestions } = useSympyQuestions();
+  const { questions, setQuestions, correctAnswers, setCorrectAnswers, mcqAnswers, setMcqAnswers, graphImages, setGraphImages, form, setForm, clearQuestions } = useSympyQuestions();
   const [isGenerating, setIsGenerating] = useState(false);
   // keep track of AI response id similar to the regular generation page (unused for sympy currently)
   const [prevResponseId, setPrevResponseId] = useState<string>("");
+
+  // State for autocomplete options
+  const [sections, setSections] = useState<string[]>([]);
+  const [questionTypes, setQuestionTypes] = useState<string[]>([]);
+  const [isLoadingOptions, setIsLoadingOptions] = useState(false);
+
+  // Fetch sections and question types on mount
+  useEffect(() => {
+    const fetchOptions = async () => {
+      setIsLoadingOptions(true);
+      try {
+        const [sectionsResponse, questionTypesResponse] = await Promise.all([
+          getAllSections(),
+          getQuestionTypesBySection(),
+        ]);
+        setSections(sectionsResponse.data);
+        setQuestionTypes(questionTypesResponse.data);
+      } catch (error) {
+        console.error("Error fetching options:", error);
+        toast.error("Failed to load options. Please refresh the page.");
+      } finally {
+        setIsLoadingOptions(false);
+      }
+    };
+    fetchOptions();
+  }, []);
+
+  // Refresh question types when section changes
+  useEffect(() => {
+    const fetchQuestionTypes = async () => {
+      try {
+        const response = await getQuestionTypesBySection(form.section);
+        setQuestionTypes(response.data);
+      } catch (error) {
+        console.error("Error fetching question types:", error);
+      }
+    };
+    if (form.section) {
+      fetchQuestionTypes();
+    }
+  }, [form.section]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>
@@ -189,23 +222,48 @@ export const SympyGeneratePage = () => {
           }}
         >
           <Stack component="form" spacing={2} onSubmit={handleSubmit}>
-            <TextField
-              label="Section"
-              name="section"
+            <Autocomplete
+              options={sections}
               value={form.section}
-              onChange={handleChange}
-              fullWidth
-              required
+              onChange={(_event, newValue) => {
+                setForm((prev) => ({ ...prev, section: newValue || "" }));
+              }}
+              onInputChange={(_event, newInputValue) => {
+                setForm((prev) => ({ ...prev, section: newInputValue }));
+              }}
+              freeSolo
+              loading={isLoadingOptions}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Section"
+                  name="section"
+                  fullWidth
+                  required
+                />
+              )}
             />
 
-            <TextField
-              label="Question Type"
-              name="question_type"
-              type="text"
+            <Autocomplete
+              options={questionTypes}
               value={form.question_type}
-              onChange={handleChange}
-              fullWidth
-              required
+              onChange={(_event, newValue) => {
+                setForm((prev) => ({ ...prev, question_type: newValue || "" }));
+              }}
+              onInputChange={(_event, newInputValue) => {
+                setForm((prev) => ({ ...prev, question_type: newInputValue }));
+              }}
+              freeSolo
+              loading={isLoadingOptions}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Question Type"
+                  name="question_type"
+                  fullWidth
+                  required
+                />
+              )}
             />
 
             <TextField

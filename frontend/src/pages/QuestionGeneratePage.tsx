@@ -14,7 +14,6 @@ import { useState, useEffect } from "react";
 import GeneratedQuestions from "../Components/GeneratedQeustions";
 import type {
   GeneratedQuestionInfo,
-  QuestionGenerationRequestBody,
   QuestionSaveRequestBody,
 } from "../utils/interface";
 import {
@@ -30,22 +29,13 @@ import { FileUploader } from "react-drag-drop-files";
 import { useQuestions } from "../context/QuestionContext";
 
 export const QuestionGeneratePage = () => {
-  const [form, setForm] = useState<QuestionGenerationRequestBody>({
-    section: "",
-    description: "",
-    count: 1,
-    questionType: "",
-    difficulty: 1,
-    detailedAnswer: false,
-    keywords: [],
-  });
-
   const {
     questions, setQuestions,
     correctAnswers, setCorrectAnswers,
     detailedAnswers, setDetailedAnswers,
     mcqAnswers, setMcqAnswers,
     prevResponseId, setPrevResponseId,
+    form, setForm,
     clearQuestions,
   } = useQuestions();
   const [isGenerating, setIsGenerating] = useState(false);

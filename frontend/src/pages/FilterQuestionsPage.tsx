@@ -5,7 +5,6 @@ import {
     Button,
     Stack,
     CircularProgress,
-    MenuItem,
     Autocomplete,
     Chip,
 } from "@mui/material";
@@ -230,51 +229,57 @@ const FilterQuestionsPage = () => {
                             helperText="Optional: Enter a specific question ID to find exact question"
                         />
 
-                        <TextField
-                            select
-                            label="Section"
-                            name="section"
+                        <Autocomplete
+                            options={sections}
                             value={form.section}
-                            onChange={handleChange}
-                            fullWidth
-                        >
-                            {sections.map((section) => (
-                                <MenuItem key={section} value={section}>
-                                    {section}
-                                </MenuItem>
-                            ))}
-                        </TextField>
+                            onChange={(_event, newValue) => {
+                                setForm((prev) => ({ ...prev, section: newValue || "" }));
+                            }}
+                            onInputChange={(_event, newInputValue) => {
+                                setForm((prev) => ({ ...prev, section: newInputValue }));
+                            }}
+                            freeSolo
+                            loading={isLoadingOptions}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Section"
+                                    name="section"
+                                    fullWidth
+                                />
+                            )}
+                        />
 
-                        <TextField
-                            label="Question Type"
-                            name="questionType"
-                            type="text"
+                        <Autocomplete
+                            options={questionTypes}
                             value={form.questionType}
-                            onChange={handleChange}
-                            fullWidth
-                            select
-                        >
-                            {questionTypes.map((type) => (
-                                <MenuItem key={type} value={type}>
-                                    {type}
-                                </MenuItem>
-                            ))}
-                        </TextField>
+                            onChange={(_event, newValue) => {
+                                setForm((prev) => ({ ...prev, questionType: newValue || "" }));
+                            }}
+                            onInputChange={(_event, newInputValue) => {
+                                setForm((prev) => ({ ...prev, questionType: newInputValue }));
+                            }}
+                            freeSolo
+                            loading={isLoadingOptions}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Question Type"
+                                    name="questionType"
+                                    fullWidth
+                                />
+                            )}
+                        />
 
                         <TextField
                             label="Difficulty"
                             name="difficulty"
+                            type="number"
                             value={form.difficulty}
                             onChange={handleChange}
                             fullWidth
-                            select
-                        >
-                            {[1, 2, 3, 4, 5].map((difficulty) => (
-                                <MenuItem key={difficulty} value={difficulty}>
-                                    {difficulty}
-                                </MenuItem>
-                            ))}
-                        </TextField>
+                            inputProps={{ min: 1, max: 5 }}
+                        />
 
                         <Autocomplete
                             multiple
@@ -288,9 +293,10 @@ const FilterQuestionsPage = () => {
                                 }));
                             }}
                             renderTags={(value, getTagProps) =>
-                                value.map((option, index) => (
-                                    <Chip variant="outlined" label={option} {...getTagProps({ index })} />
-                                ))
+                                value.map((option, index) => {
+                                    const { key, ...tagProps } = getTagProps({ index });
+                                    return <Chip key={key} variant="outlined" label={option} {...tagProps} />;
+                                })
                             }
                             renderInput={(params) => (
                                 <TextField
