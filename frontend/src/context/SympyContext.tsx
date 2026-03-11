@@ -50,6 +50,7 @@ export function SympyProvider({ children }: { children: ReactNode }) {
     difficulty: 1,
     questions_count: 1,
     mcq: false,
+    keywords: [],
   });
 
   const clearQuestions = () => {
