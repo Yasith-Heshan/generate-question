@@ -68,6 +68,13 @@ const FilteredQuestions = ({
                 {" "}
                 <MathJax inline>
                   {" "}
+                  {`Difficulty: ${filteredQuestionResponseItems[index].difficulty}`}
+                </MathJax>
+              </h3>
+              <h3>
+                {" "}
+                <MathJax inline>
+                  {" "}
                   {`Keywords: ${filteredQuestionResponseItems[index].keywords?.join(", ") ?? "None"}`}
                 </MathJax>
               </h3>
