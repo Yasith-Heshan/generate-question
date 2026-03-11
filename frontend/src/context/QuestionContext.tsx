@@ -31,8 +31,8 @@ function usePersistedState<T>(key: string, defaultValue: T) {
   useEffect(() => {
     try {
       localStorage.setItem(key, JSON.stringify(state));
-    } catch {
-      // ignore storage errors (e.g. private browsing quota)
+    } catch(err) {
+      console.error("Failed to persist state to localStorage:", err);
     }
   }, [key, state]);
 
