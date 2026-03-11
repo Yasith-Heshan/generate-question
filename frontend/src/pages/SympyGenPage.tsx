@@ -128,6 +128,10 @@ export const SympyGeneratePage = () => {
   async function handleAddToDB(
     generatedQuestionInfo: GeneratedQuestionInfo
   ): Promise<void> {
+    if (!form.section || !form.question_type || !form.difficulty) {
+      toast.error("Please fill in Section, Question Type, and Difficulty before saving.");
+      return;
+    }
     try {
       await saveQuestion({
         ...generatedQuestionInfo,
@@ -135,6 +139,7 @@ export const SympyGeneratePage = () => {
         questionType: form.question_type,
         difficulty: form.difficulty,
         responseId: prevResponseId,
+        graphImg: generatedQuestionInfo.graphImg,
       } as QuestionSaveRequestBody);
       removeAddedQuestion(generatedQuestionInfo.index);
       toast.success("Question added to the database successfully!");
@@ -145,6 +150,10 @@ export const SympyGeneratePage = () => {
   }
 
   const handleAddAllToDB = async () => {
+    if (!form.section || !form.question_type || !form.difficulty) {
+      toast.error("Please fill in Section, Question Type, and Difficulty before saving.");
+      return;
+    }
     const questionSaveRequestBody: QuestionSaveRequestBody[] = questions.map(
       (question, index) =>
       ({
@@ -155,6 +164,7 @@ export const SympyGeneratePage = () => {
         correctAnswer: correctAnswers[index],
         mcqAnswers: mcqAnswers[index].split(",") || [],
         responseId: prevResponseId,
+        graphImg: graphImages[index] || undefined,
       } as QuestionSaveRequestBody)
     );
     try {

@@ -134,9 +134,10 @@ const GeneratedQuestions = ({
                   detailedAnswer: detailedAnswers
                     ? detailedAnswers[index]
                     : undefined,
-                  mcqAnswers: mcqAnswers
+                  mcqAnswers: mcqAnswers?.[index]
                     ? mcqAnswers[index].split(",")
                     : undefined,
+                  graphImg: graphImages?.[index] || undefined,
                   index: index,
                 });
               }}
