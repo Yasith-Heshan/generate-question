@@ -11,22 +11,16 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { useState } from "react";
-import type { QuestionFilterRequestBody, QuestionFilterResponseItem, QuestionUpdateRequestBody } from "../utils/interface";
+import type { QuestionFilterResponseItem, QuestionUpdateRequestBody } from "../utils/interface";
 import { filterQuestions, getAllSections, getKeywordsByFilter, getQuestionTypesBySection, updateQuestion, deleteQuestion } from "../api/openAiService";
 import FilteredQuestions from "../Components/FilteredQuestions";
 import EditQuestionModal from "../Components/EditQuestionModal";
 import { toast } from "react-toastify";
+import { useFilter } from "../context/FilterContext";
 
 const FilterQuestionsPage = () => {
-    const [form, setForm] = useState<QuestionFilterRequestBody>({
-        section: "",
-        questionType: "",
-        difficulty: 1,
-        keywords: [],
-        id: "",
-    });
-
-    const [filteredQuestions, setFiltedQuestions] = useState<QuestionFilterResponseItem[]>([]);
+    const { form, setForm, filteredQuestions, setFilteredQuestions, clearFilteredQuestions } = useFilter();
+    const setFiltedQuestions = setFilteredQuestions;
     const [isGenerating, setIsGenerating] = useState(false);
     const [sections, setSections] = useState<string[]>([]);
     const [questionTypes, setQuestionTypes] = useState<string[]>([]);
@@ -101,7 +95,7 @@ const FilterQuestionsPage = () => {
     };
 
     const clearState = () => {
-        setFiltedQuestions([]);
+        clearFilteredQuestions();
     };
 
     const resetForm = () => {

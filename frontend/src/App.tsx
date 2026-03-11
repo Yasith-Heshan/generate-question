@@ -4,10 +4,15 @@ import FilterQuestionsPage from "./pages/FilterQuestionsPage";
 import { Routes, Route } from 'react-router-dom';
 import { QuestionGeneratePage } from "./pages/QuestionGeneratePage";
 import { SympyGeneratePage } from "./pages/SympyGenPage";
+import { QuestionProvider } from "./context/QuestionContext";
+import { FilterProvider } from "./context/FilterContext";
+import { SympyProvider } from "./context/SympyContext";
 
 function App() {
   return (
-    <>
+    <QuestionProvider>
+    <FilterProvider>
+    <SympyProvider>
       <AppBar />
       <Routes>
         <Route path="/" element={<QuestionGeneratePage />} />
@@ -26,7 +31,9 @@ function App() {
         pauseOnHover
         theme="light"
       />
-    </>
+    </SympyProvider>
+    </FilterProvider>
+    </QuestionProvider>
   );
 }
 
