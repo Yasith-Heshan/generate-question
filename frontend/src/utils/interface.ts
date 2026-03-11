@@ -79,5 +79,6 @@ export interface SympyGeneratorRequestBody {
 export interface SympyGeneratorResponseItem {
   question: string;
   correct_solution: string;
-  other_solutions: string[];
+  other_solutions?: string[];
+  graph_img?: string;
 }

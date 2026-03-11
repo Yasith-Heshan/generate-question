@@ -5,9 +5,11 @@ interface SympyContextType {
   questions: string[];
   correctAnswers: string[];
   mcqAnswers: string[];
+  graphImages: string[];
   setQuestions: Dispatch<SetStateAction<string[]>>;
   setCorrectAnswers: Dispatch<SetStateAction<string[]>>;
   setMcqAnswers: Dispatch<SetStateAction<string[]>>;
+  setGraphImages: Dispatch<SetStateAction<string[]>>;
   clearQuestions: () => void;
 }
 
@@ -38,16 +40,18 @@ export function SympyProvider({ children }: { children: ReactNode }) {
   const [questions, setQuestions] = usePersistedState<string[]>("sq_questions", []);
   const [correctAnswers, setCorrectAnswers] = usePersistedState<string[]>("sq_correctAnswers", []);
   const [mcqAnswers, setMcqAnswers] = usePersistedState<string[]>("sq_mcqAnswers", []);
+  const [graphImages, setGraphImages] = usePersistedState<string[]>("sq_graphImages", []);
 
   const clearQuestions = () => {
     setQuestions([]);
     setCorrectAnswers([]);
     setMcqAnswers([]);
+    setGraphImages([]);
   };
 
   return (
     <SympyContext.Provider
-      value={{ questions, correctAnswers, mcqAnswers, setQuestions, setCorrectAnswers, setMcqAnswers, clearQuestions }}
+      value={{ questions, correctAnswers, mcqAnswers, graphImages, setQuestions, setCorrectAnswers, setMcqAnswers, setGraphImages, clearQuestions }}
     >
       {children}
     </SympyContext.Provider>

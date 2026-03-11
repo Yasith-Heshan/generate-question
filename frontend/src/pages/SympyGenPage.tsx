@@ -32,7 +32,7 @@ export const SympyGeneratePage = () => {
     mcq: false,
   })
 
-  const { questions, setQuestions, correctAnswers, setCorrectAnswers, mcqAnswers, setMcqAnswers, clearQuestions } = useSympyQuestions();
+  const { questions, setQuestions, correctAnswers, setCorrectAnswers, mcqAnswers, setMcqAnswers, graphImages, setGraphImages, clearQuestions } = useSympyQuestions();
   const [isGenerating, setIsGenerating] = useState(false);
   // keep track of AI response id similar to the regular generation page (unused for sympy currently)
   const [prevResponseId, setPrevResponseId] = useState<string>("");
@@ -69,17 +69,19 @@ export const SympyGeneratePage = () => {
       let questions: string[] = [];
       let correctAnswers: string[] = [];
       let mcqAnswers: string[] = [];
+      let graphImages: string[] = [];
       response.data.forEach((item: SympyGeneratorResponseItem) => {
         questions.push(item.question);
         correctAnswers.push(formatAnswer(item.correct_solution));
-        if (form.mcq) {
+        if (form.mcq && item.other_solutions) {
           mcqAnswers.push(formatMcqAnswers(item.other_solutions).join(","));
         }
-
+        graphImages.push(item.graph_img ?? "");
       });
       setQuestions(questions);
       setCorrectAnswers(correctAnswers);
       setMcqAnswers(mcqAnswers);
+      setGraphImages(graphImages);
       const newResp = response.data.responseId || "";
       setPrevResponseId(newResp);
       setForm((prev) => ({ ...prev, prevResponseId: newResp }));
@@ -95,6 +97,7 @@ export const SympyGeneratePage = () => {
     setQuestions((prev) => prev.filter((_, i) => i !== index));
     setCorrectAnswers((prev) => prev.filter((_, i) => i !== index));
     setMcqAnswers((prev) => prev.filter((_, i) => i !== index));
+    setGraphImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleEditQuestion = (
@@ -116,6 +119,7 @@ export const SympyGeneratePage = () => {
       prev.map((m, i) => i === index ? editedData.mcqAnswers.join(",") : m)
     );
   };
+
 
   const clearState = () => {
     clearQuestions();
@@ -252,6 +256,7 @@ export const SympyGeneratePage = () => {
               questions={questions}
               correctAnswers={correctAnswers}
               mcqAnswers={mcqAnswers}
+              graphImages={graphImages}
               onAddToDB={handleAddToDB}
               onEditQuestion={handleEditQuestion}
             />

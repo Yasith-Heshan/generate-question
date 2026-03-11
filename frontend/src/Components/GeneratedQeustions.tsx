@@ -10,6 +10,7 @@ interface GeneratedQuestionsProps {
   detailedAnswers?: string[];
   correctAnswers: string[];
   mcqAnswers?: string[];
+  graphImages?: string[];
   onAddToDB: (generatedQuestionInfo: GeneratedQuestionInfo) => void;
   onEditQuestion: (
     index: number,
@@ -27,6 +28,7 @@ const GeneratedQuestions = ({
   detailedAnswers,
   correctAnswers,
   mcqAnswers,
+  graphImages,
   onAddToDB,
   onEditQuestion,
 }: GeneratedQuestionsProps) => {
@@ -106,6 +108,15 @@ const GeneratedQuestions = ({
                 </h4>
               )}
             </MathJaxContext>
+            {graphImages && graphImages[index] && (
+              <Box sx={{ mt: 2 }}>
+                <img
+                  src={`data:image/png;base64,${graphImages[index]}`}
+                  alt={`Graph for question ${index + 1}`}
+                  style={{ maxWidth: "100%" }}
+                />
+              </Box>
+            )}
           </Box>
           <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 2 }}>
             <Button
