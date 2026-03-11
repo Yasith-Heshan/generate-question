@@ -44,5 +44,8 @@ class Book22Chaptor02Service(BaseQuestionGeneratorService):
                                         questions_count: int)->List[ServiceResponce]:
         questions_and_solutions =  generate_problem_22_E_2__4_62_questions(difficulty, questions_count)
         questions_and_answers = list(map(lambda x: ServiceResponce(question=x['question'], correct_solution=x['solution'], other_solutions=x["other_solutions"],graph_img=x["graph_img"]), questions_and_solutions))
-        
+        print("question:", questions_and_answers[0].question)
+        print("correct_solution:", questions_and_answers[0].correct_solution)
+        print("other_solutions:", questions_and_answers[0].other_solutions)
+        print("graph_img:", questions_and_answers[0].graph_img)
         return questions_and_answers

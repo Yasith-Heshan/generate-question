@@ -5,37 +5,70 @@ import {
   Button,
   Stack,
   CircularProgress,
-  Checkbox
+  Checkbox,
+  Autocomplete
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import GeneratedQuestions from "../Components/GeneratedQeustions";
 import type {
   GeneratedQuestionInfo,
   QuestionSaveRequestBody,
-  SympyGeneratorRequestBody,
   SympyGeneratorResponseItem,
 } from "../utils/interface";
 import {
   generateQuestion,
 } from "../api/sympyService";
 import { toast } from "react-toastify";
-import { saveQuestion, saveAllQuestions } from "../api/openAiService";
+import { saveQuestion, saveAllQuestions, getAllSections, getQuestionTypesBySection } from "../api/openAiService";
 import { useSympyQuestions } from "../context/SympyContext";
 
 export const SympyGeneratePage = () => {
-  const [form, setForm] = useState<SympyGeneratorRequestBody>({
-    section: "",
-    question_type: "",
-    difficulty: 1,
-    questions_count: 1,
-    mcq: false,
-  })
-
-  const { questions, setQuestions, correctAnswers, setCorrectAnswers, mcqAnswers, setMcqAnswers, clearQuestions } = useSympyQuestions();
+  const { questions, setQuestions, correctAnswers, setCorrectAnswers, mcqAnswers, setMcqAnswers, graphImages, setGraphImages, form, setForm, clearQuestions } = useSympyQuestions();
   const [isGenerating, setIsGenerating] = useState(false);
   // keep track of AI response id similar to the regular generation page (unused for sympy currently)
   const [prevResponseId, setPrevResponseId] = useState<string>("");
+
+  // State for autocomplete options
+  const [sections, setSections] = useState<string[]>([]);
+  const [questionTypes, setQuestionTypes] = useState<string[]>([]);
+  const [isLoadingOptions, setIsLoadingOptions] = useState(false);
+
+  // Fetch sections and question types on mount
+  useEffect(() => {
+    const fetchOptions = async () => {
+      setIsLoadingOptions(true);
+      try {
+        const [sectionsResponse, questionTypesResponse] = await Promise.all([
+          getAllSections(),
+          getQuestionTypesBySection(),
+        ]);
+        setSections(sectionsResponse.data);
+        setQuestionTypes(questionTypesResponse.data);
+      } catch (error) {
+        console.error("Error fetching options:", error);
+        toast.error("Failed to load options. Please refresh the page.");
+      } finally {
+        setIsLoadingOptions(false);
+      }
+    };
+    fetchOptions();
+  }, []);
+
+  // Refresh question types when section changes
+  useEffect(() => {
+    const fetchQuestionTypes = async () => {
+      try {
+        const response = await getQuestionTypesBySection(form.section);
+        setQuestionTypes(response.data);
+      } catch (error) {
+        console.error("Error fetching question types:", error);
+      }
+    };
+    if (form.section) {
+      fetchQuestionTypes();
+    }
+  }, [form.section]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>
@@ -69,17 +102,19 @@ export const SympyGeneratePage = () => {
       let questions: string[] = [];
       let correctAnswers: string[] = [];
       let mcqAnswers: string[] = [];
+      let graphImages: string[] = [];
       response.data.forEach((item: SympyGeneratorResponseItem) => {
         questions.push(item.question);
         correctAnswers.push(formatAnswer(item.correct_solution));
-        if (form.mcq) {
+        if (form.mcq && item.other_solutions) {
           mcqAnswers.push(formatMcqAnswers(item.other_solutions).join(","));
         }
-
+        graphImages.push(item.graph_img ?? "");
       });
       setQuestions(questions);
       setCorrectAnswers(correctAnswers);
       setMcqAnswers(mcqAnswers);
+      setGraphImages(graphImages);
       const newResp = response.data.responseId || "";
       setPrevResponseId(newResp);
       setForm((prev) => ({ ...prev, prevResponseId: newResp }));
@@ -95,6 +130,7 @@ export const SympyGeneratePage = () => {
     setQuestions((prev) => prev.filter((_, i) => i !== index));
     setCorrectAnswers((prev) => prev.filter((_, i) => i !== index));
     setMcqAnswers((prev) => prev.filter((_, i) => i !== index));
+    setGraphImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleEditQuestion = (
@@ -117,6 +153,7 @@ export const SympyGeneratePage = () => {
     );
   };
 
+
   const clearState = () => {
     clearQuestions();
   };
@@ -124,6 +161,10 @@ export const SympyGeneratePage = () => {
   async function handleAddToDB(
     generatedQuestionInfo: GeneratedQuestionInfo
   ): Promise<void> {
+    if (!form.section || !form.question_type || !form.difficulty) {
+      toast.error("Please fill in Section, Question Type, and Difficulty before saving.");
+      return;
+    }
     try {
       await saveQuestion({
         ...generatedQuestionInfo,
@@ -131,6 +172,7 @@ export const SympyGeneratePage = () => {
         questionType: form.question_type,
         difficulty: form.difficulty,
         responseId: prevResponseId,
+        graphImg: generatedQuestionInfo.graphImg,
       } as QuestionSaveRequestBody);
       removeAddedQuestion(generatedQuestionInfo.index);
       toast.success("Question added to the database successfully!");
@@ -141,6 +183,10 @@ export const SympyGeneratePage = () => {
   }
 
   const handleAddAllToDB = async () => {
+    if (!form.section || !form.question_type || !form.difficulty) {
+      toast.error("Please fill in Section, Question Type, and Difficulty before saving.");
+      return;
+    }
     const questionSaveRequestBody: QuestionSaveRequestBody[] = questions.map(
       (question, index) =>
       ({
@@ -151,6 +197,7 @@ export const SympyGeneratePage = () => {
         correctAnswer: correctAnswers[index],
         mcqAnswers: mcqAnswers[index].split(",") || [],
         responseId: prevResponseId,
+        graphImg: graphImages[index] || undefined,
       } as QuestionSaveRequestBody)
     );
     try {
@@ -175,23 +222,48 @@ export const SympyGeneratePage = () => {
           }}
         >
           <Stack component="form" spacing={2} onSubmit={handleSubmit}>
-            <TextField
-              label="Section"
-              name="section"
+            <Autocomplete
+              options={sections}
               value={form.section}
-              onChange={handleChange}
-              fullWidth
-              required
+              onChange={(_event, newValue) => {
+                setForm((prev) => ({ ...prev, section: newValue || "" }));
+              }}
+              onInputChange={(_event, newInputValue) => {
+                setForm((prev) => ({ ...prev, section: newInputValue }));
+              }}
+              freeSolo
+              loading={isLoadingOptions}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Section"
+                  name="section"
+                  fullWidth
+                  required
+                />
+              )}
             />
 
-            <TextField
-              label="Question Type"
-              name="question_type"
-              type="text"
+            <Autocomplete
+              options={questionTypes}
               value={form.question_type}
-              onChange={handleChange}
-              fullWidth
-              required
+              onChange={(_event, newValue) => {
+                setForm((prev) => ({ ...prev, question_type: newValue || "" }));
+              }}
+              onInputChange={(_event, newInputValue) => {
+                setForm((prev) => ({ ...prev, question_type: newInputValue }));
+              }}
+              freeSolo
+              loading={isLoadingOptions}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Question Type"
+                  name="question_type"
+                  fullWidth
+                  required
+                />
+              )}
             />
 
             <TextField
@@ -252,6 +324,7 @@ export const SympyGeneratePage = () => {
               questions={questions}
               correctAnswers={correctAnswers}
               mcqAnswers={mcqAnswers}
+              graphImages={graphImages}
               onAddToDB={handleAddToDB}
               onEditQuestion={handleEditQuestion}
             />

@@ -10,17 +10,15 @@ from typing import List
 router = APIRouter()
 
 def formatResponse(response: ServiceResponce):
-    if(response.other_solutions is not None):
-        return {
-            "question": response.question,
-            "correct_solution": response.correct_solution,
-            "other_solutions": response.other_solutions,
-            "graph_img": response.graph_img
-        }
-    return {
+    result = {
         "question": response.question,
-        "correct_solution": response.correct_solution
+        "correct_solution": response.correct_solution,
     }
+    if response.other_solutions is not None:
+        result["other_solutions"] = response.other_solutions
+    if response.graph_img is not None:
+        result["graph_img"] = response.graph_img
+    return result
     
 
 

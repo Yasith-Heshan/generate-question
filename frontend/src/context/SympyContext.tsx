@@ -1,13 +1,18 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode, Dispatch, SetStateAction } from "react";
+import type { SympyGeneratorRequestBody } from "../utils/interface";
 
 interface SympyContextType {
   questions: string[];
   correctAnswers: string[];
   mcqAnswers: string[];
+  graphImages: string[];
+  form: SympyGeneratorRequestBody;
   setQuestions: Dispatch<SetStateAction<string[]>>;
   setCorrectAnswers: Dispatch<SetStateAction<string[]>>;
   setMcqAnswers: Dispatch<SetStateAction<string[]>>;
+  setGraphImages: Dispatch<SetStateAction<string[]>>;
+  setForm: Dispatch<SetStateAction<SympyGeneratorRequestBody>>;
   clearQuestions: () => void;
 }
 
@@ -38,16 +43,25 @@ export function SympyProvider({ children }: { children: ReactNode }) {
   const [questions, setQuestions] = usePersistedState<string[]>("sq_questions", []);
   const [correctAnswers, setCorrectAnswers] = usePersistedState<string[]>("sq_correctAnswers", []);
   const [mcqAnswers, setMcqAnswers] = usePersistedState<string[]>("sq_mcqAnswers", []);
+  const [graphImages, setGraphImages] = usePersistedState<string[]>("sq_graphImages", []);
+  const [form, setForm] = usePersistedState<SympyGeneratorRequestBody>("sq_form", {
+    section: "",
+    question_type: "",
+    difficulty: 1,
+    questions_count: 1,
+    mcq: false,
+  });
 
   const clearQuestions = () => {
     setQuestions([]);
     setCorrectAnswers([]);
     setMcqAnswers([]);
+    setGraphImages([]);
   };
 
   return (
     <SympyContext.Provider
-      value={{ questions, correctAnswers, mcqAnswers, setQuestions, setCorrectAnswers, setMcqAnswers, clearQuestions }}
+      value={{ questions, correctAnswers, mcqAnswers, graphImages, form, setQuestions, setCorrectAnswers, setMcqAnswers, setGraphImages, setForm, clearQuestions }}
     >
       {children}
     </SympyContext.Provider>

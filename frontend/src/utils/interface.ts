@@ -20,6 +20,7 @@ export interface QuestionSaveRequestBody {
   mcqAnswers?: string[];
   keywords?: string[];
   responseId?:string;
+  graphImg?: string;
 }
 
 export interface GeneratedQuestionInfo {
@@ -31,6 +32,7 @@ export interface GeneratedQuestionInfo {
   // optional id returned from generation API so that saved questions can
   // be associated with a particular response batch
   responseId?: string;
+  graphImg?: string;
 }
 
 export interface QuestionFilterRequestBody {
@@ -79,5 +81,6 @@ export interface SympyGeneratorRequestBody {
 export interface SympyGeneratorResponseItem {
   question: string;
   correct_solution: string;
-  other_solutions: string[];
+  other_solutions?: string[];
+  graph_img?: string;
 }

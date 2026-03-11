@@ -11,6 +11,7 @@ class QuestionModel(Document):
     mcqAnswers: Optional[list[str]] = []
     keywords: Optional[list[str]] = []  # Add keywords field to the model
     responseId: Optional[str] = None  # Response identifier from AI generation
+    graphImg: Optional[str] = None  # Optional base64 graph image
     is_deleted: Optional[bool] = False
 
     class Settings:
