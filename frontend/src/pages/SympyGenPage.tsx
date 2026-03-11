@@ -21,6 +21,7 @@ import {
 } from "../api/sympyService";
 import { toast } from "react-toastify";
 import { saveQuestion, saveAllQuestions } from "../api/openAiService";
+import { useSympyQuestions } from "../context/SympyContext";
 
 export const SympyGeneratePage = () => {
   const [form, setForm] = useState<SympyGeneratorRequestBody>({
@@ -31,9 +32,7 @@ export const SympyGeneratePage = () => {
     mcq: false,
   })
 
-  const [questions, setQuestions] = useState<string[]>([]);
-  const [correctAnswers, setCorrectAnswers] = useState<string[]>([]);
-  const [mcqAnswers, setMcqAnswers] = useState<string[]>([]);
+  const { questions, setQuestions, correctAnswers, setCorrectAnswers, mcqAnswers, setMcqAnswers, clearQuestions } = useSympyQuestions();
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleChange = (
@@ -113,9 +112,7 @@ export const SympyGeneratePage = () => {
   };
 
   const clearState = () => {
-    setQuestions([]);
-    setCorrectAnswers([]);
-    setMcqAnswers([]);
+    clearQuestions();
   };
 
   async function handleAddToDB(

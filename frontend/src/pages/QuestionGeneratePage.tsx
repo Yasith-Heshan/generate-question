@@ -27,6 +27,7 @@ import {
 } from "../api/openAiService";
 import { toast } from "react-toastify";
 import { FileUploader } from "react-drag-drop-files";
+import { useQuestions } from "../context/QuestionContext";
 
 export const QuestionGeneratePage = () => {
   const [form, setForm] = useState<QuestionGenerationRequestBody>({
@@ -39,14 +40,17 @@ export const QuestionGeneratePage = () => {
     keywords: [],
   });
 
-  const [questions, setQuestions] = useState<string[]>([]);
-  const [correctAnswers, setCorrectAnswers] = useState<string[]>([]);
-  const [detailedAnswers, setDetailedAnswers] = useState<string[]>([]);
-  const [mcqAnswers, setMcqAnswers] = useState<string[]>([]);
+  const {
+    questions, setQuestions,
+    correctAnswers, setCorrectAnswers,
+    detailedAnswers, setDetailedAnswers,
+    mcqAnswers, setMcqAnswers,
+    prevResponseId, setPrevResponseId,
+    clearQuestions,
+  } = useQuestions();
   const [isGenerating, setIsGenerating] = useState(false);
   const [file, setFile] = useState<File | null>(null)
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
-  const [prevResponseId, setPrevResponseId] = useState<string>("");
 
   // State for autocomplete options
   const [sections, setSections] = useState<string[]>([]);
@@ -86,7 +90,6 @@ export const QuestionGeneratePage = () => {
   // Fetch keywords and question types based on form changes
   useEffect(() => {
     const fetchKeywordsAndQuestionTypes = async () => {
-      setIsGenerating(true);
       try {
         const [keywordsResponse, questionTypesResponse] = await Promise.all([
           getKeywordsByFilter(form.section, form.questionType, form.difficulty),
@@ -97,8 +100,6 @@ export const QuestionGeneratePage = () => {
       } catch (error) {
         console.error("Error fetching keywords or question types:", error);
         toast.error("Failed to load keywords or question types. Please refresh the page.");
-      } finally {
-        setIsGenerating(false);
       }
     };
 
@@ -246,9 +247,7 @@ export const QuestionGeneratePage = () => {
 
 
   const clearState = () => {
-    setQuestions([]);
-    setCorrectAnswers([]);
-    setMcqAnswers([]);
+    clearQuestions();
   };
 
   async function handleAddToDB(
