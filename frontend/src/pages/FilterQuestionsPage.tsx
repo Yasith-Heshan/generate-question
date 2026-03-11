@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { useState } from "react";
-import type { QuestionFilterRequestBody, QuestionFilterResponseItem, QuestionUpdateRequestBody } from "../utils/interface";
+import type { QuestionFilterResponseItem, QuestionUpdateRequestBody } from "../utils/interface";
 import { filterQuestions, getAllSections, getKeywordsByFilter, getQuestionTypesBySection, updateQuestion, deleteQuestion } from "../api/openAiService";
 import FilteredQuestions from "../Components/FilteredQuestions";
 import EditQuestionModal from "../Components/EditQuestionModal";
