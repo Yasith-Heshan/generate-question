@@ -15,7 +15,7 @@ function usePersistedState<T>(key: string, defaultValue: T) {
     try {
       const stored = localStorage.getItem(key);
       return stored !== null ? (JSON.parse(stored) as T) : defaultValue;
-    } catch {
+    } catch(err) {
       return defaultValue;
     }
   });
@@ -23,8 +23,8 @@ function usePersistedState<T>(key: string, defaultValue: T) {
   useEffect(() => {
     try {
       localStorage.setItem(key, JSON.stringify(state));
-    } catch {
-      // ignore storage errors
+    } catch(err) {
+      console.error("Failed to persist state to localStorage:", err);
     }
   }, [key, state]);
 
