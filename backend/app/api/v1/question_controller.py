@@ -1,7 +1,26 @@
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException
-from app.services.question_service import createQuestion,add_to_db, add_all_to_db, filter_questions_from_db, get_all_sections_from_db, get_keywords_by_filter, get_question_types_by_section, readContentFromImage, update_question_in_db
-from app.schemas.question import QuestionGenerateRequestBody, QuestionResponseBody, Question, QuestionFilterRequestBody, TestRequestBody, QuestionUpdateRequestBody
+from app.services.question_service import (
+    createQuestion,
+    add_to_db,
+    add_all_to_db,
+    filter_questions_from_db,
+    filter_questions_paginated,
+    get_all_sections_from_db,
+    get_keywords_by_filter,
+    get_question_types_by_section,
+    readContentFromImage,
+    update_question_in_db,
+)
+from app.schemas.question import (
+    QuestionGenerateRequestBody,
+    QuestionResponseBody,
+    Question,
+    QuestionFilterRequestBody,
+    PaginatedQuestionsResponse,
+    TestRequestBody,
+    QuestionUpdateRequestBody,
+)
 from typing import  List
 from app.adapters.db_adapter import MongoDBAdapter
 
@@ -22,7 +41,19 @@ async def add_all_questions_to_db(questions: List[Question]):
 
 @questionController.post("/filter_questions", response_model=List[Question], summary="Filter Questions", description="Filter questions from the database based on criteria", tags=["Query"])
 async def filter_questions(questionFilterRequestBody: QuestionFilterRequestBody):
+    # Existing frontend-facing endpoint returns a simple list
     return await filter_questions_from_db(questionFilterRequestBody)
+
+
+@questionController.post(
+    "/filter_questions_paginated",
+    response_model=PaginatedQuestionsResponse,
+    summary="Internal Paginated Filter",
+    description="Internal endpoint providing paginated question results; not used by frontend",
+    tags=["Internal"],
+)
+async def filter_questions_internal(questionFilterRequestBody: QuestionFilterRequestBody):
+    return await filter_questions_paginated(questionFilterRequestBody)
 
 @questionController.put("/questions/{question_id}", summary="Update Question", description="Update an existing question in the database", tags=["Database Management"])
 async def update_question(question_id: str, update_data: QuestionUpdateRequestBody):

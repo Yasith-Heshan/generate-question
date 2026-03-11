@@ -4,44 +4,17 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { MathJaxContext, MathJax } from "better-react-mathjax";
 import type { QuestionFilterResponseItem } from "../utils/interface";
-import { deleteQuestion } from "../api/openAiService";
 
 interface FilteredQuestionsProps {
   filteredQuestionResponseItems: QuestionFilterResponseItem[];
   onEditQuestion: (question: QuestionFilterResponseItem) => void;
+  onDeleteQuestion: (question: QuestionFilterResponseItem) => void;
 }
-//TODO
-const onDeleteQuestion = async (question: QuestionFilterResponseItem) => {
-  if (!question.id) {
-    console.error("Question ID is missing");
-    return;
-  }
-
-  const confirmed = window.confirm(
-    `Are you sure you want to delete question ID ${question.id}?`
-  );
-  if (!confirmed) return;
-
-  try {
-    await deleteQuestion(question.id); // <-- use your helper function
-    alert(`Question ID ${question.id} deleted successfully!`);
-
-    // Remove the deleted question from the local state
-    // setFilteredQuestions(prev =>
-    //   prev.filter(q => q.id !== question.id)
-    // );
-
-  } catch (err: any) {
-    console.error("Error deleting question:", err);
-    alert(err.response?.data?.detail || "Something went wrong while deleting the question.");
-  }
-};
-
-
 
 const FilteredQuestions = ({
   filteredQuestionResponseItems,
   onEditQuestion,
+  onDeleteQuestion,
 }: FilteredQuestionsProps) => {
   if (!filteredQuestionResponseItems || filteredQuestionResponseItems.length === 0) return null;
 
@@ -89,6 +62,13 @@ const FilteredQuestions = ({
                 <MathJax inline>
                   {" "}
                   {`Question Type: ${filteredQuestionResponseItems[index].questionType}`}
+                </MathJax>
+              </h3>
+              <h3>
+                {" "}
+                <MathJax inline>
+                  {" "}
+                  {`Difficulty: ${filteredQuestionResponseItems[index].difficulty}`}
                 </MathJax>
               </h3>
               <h3>

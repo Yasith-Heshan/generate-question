@@ -19,6 +19,7 @@ export interface QuestionSaveRequestBody {
   correctAnswer: string;
   mcqAnswers?: string[];
   keywords?: string[];
+  responseId?:string;
 }
 
 export interface GeneratedQuestionInfo {
@@ -27,6 +28,9 @@ export interface GeneratedQuestionInfo {
   detailedAnswer?: string;
   mcqAnswers?: string[];
   index: number;
+  // optional id returned from generation API so that saved questions can
+  // be associated with a particular response batch
+  responseId?: string;
 }
 
 export interface QuestionFilterRequestBody {

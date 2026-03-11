@@ -34,6 +34,8 @@ export const SympyGeneratePage = () => {
 
   const { questions, setQuestions, correctAnswers, setCorrectAnswers, mcqAnswers, setMcqAnswers, clearQuestions } = useSympyQuestions();
   const [isGenerating, setIsGenerating] = useState(false);
+  // keep track of AI response id similar to the regular generation page (unused for sympy currently)
+  const [prevResponseId, setPrevResponseId] = useState<string>("");
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>
@@ -62,7 +64,8 @@ export const SympyGeneratePage = () => {
     try {
       clearState();
       setIsGenerating(true);
-      const response = await generateQuestion(form);
+      const requestBody = { ...form, prevResponseId };
+      const response = await generateQuestion(requestBody);
       let questions: string[] = [];
       let correctAnswers: string[] = [];
       let mcqAnswers: string[] = [];
@@ -77,6 +80,9 @@ export const SympyGeneratePage = () => {
       setQuestions(questions);
       setCorrectAnswers(correctAnswers);
       setMcqAnswers(mcqAnswers);
+      const newResp = response.data.responseId || "";
+      setPrevResponseId(newResp);
+      setForm((prev) => ({ ...prev, prevResponseId: newResp }));
     } catch (error) {
       console.error("Error generating questions:", error);
       toast.error("Failed to generate questions. Please try again.");
@@ -124,6 +130,7 @@ export const SympyGeneratePage = () => {
         section: form.section,
         questionType: form.question_type,
         difficulty: form.difficulty,
+        responseId: prevResponseId,
       } as QuestionSaveRequestBody);
       removeAddedQuestion(generatedQuestionInfo.index);
       toast.success("Question added to the database successfully!");
@@ -143,6 +150,7 @@ export const SympyGeneratePage = () => {
         question: question,
         correctAnswer: correctAnswers[index],
         mcqAnswers: mcqAnswers[index].split(",") || [],
+        responseId: prevResponseId,
       } as QuestionSaveRequestBody)
     );
     try {

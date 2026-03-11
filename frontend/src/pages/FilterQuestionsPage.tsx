@@ -11,8 +11,8 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { useState } from "react";
-import type { QuestionFilterResponseItem, QuestionUpdateRequestBody } from "../utils/interface";
-import { filterQuestions, getAllSections, getKeywordsByFilter, getQuestionTypesBySection, updateQuestion } from "../api/openAiService";
+import type { QuestionFilterRequestBody, QuestionFilterResponseItem, QuestionUpdateRequestBody } from "../utils/interface";
+import { filterQuestions, getAllSections, getKeywordsByFilter, getQuestionTypesBySection, updateQuestion, deleteQuestion } from "../api/openAiService";
 import FilteredQuestions from "../Components/FilteredQuestions";
 import EditQuestionModal from "../Components/EditQuestionModal";
 import { toast } from "react-toastify";
@@ -131,6 +131,33 @@ const FilterQuestionsPage = () => {
     const handleEditQuestion = (question: QuestionFilterResponseItem) => {
         setSelectedQuestionForEdit(question);
         setEditModalOpen(true);
+    };
+
+    // Handle deleting a question
+    const handleDeleteQuestion = async (question: QuestionFilterResponseItem) => {
+        if (!question.id) {
+            toast.error("Question ID is missing");
+            return;
+        }
+
+        const confirmed = window.confirm(
+            `Are you sure you want to delete question ID ${question.id}?`
+        );
+        if (!confirmed) return;
+
+        try {
+            await deleteQuestion(question.id);
+
+            // Update the local state
+            setFiltedQuestions(prev =>
+                prev.filter(q => q.id !== question.id)
+            );
+
+            toast.success(`Question ID ${question.id} deleted successfully!`);
+        } catch (error) {
+            console.error("Error deleting question:", error);
+            toast.error("Failed to delete question. Please try again.");
+        }
     };
 
     // Handle closing edit modal
@@ -301,9 +328,14 @@ const FilterQuestionsPage = () => {
                             overflowY: "auto",
                         }}
                     >
+                        {/* ToDo: Add suitable styles and shift to right side (Filtered Questions count section) */}
+                        <Box sx={{ textAlign: 'right', marginBottom: 2, marginRight: 5 }}>
+                            <p>Filtered Questions: {filteredQuestions.length}</p>
+                        </Box>
                         <FilteredQuestions
                             filteredQuestionResponseItems={filteredQuestions}
                             onEditQuestion={handleEditQuestion}
+                            onDeleteQuestion={handleDeleteQuestion}
                         />
                     </Box>
                     <Box
