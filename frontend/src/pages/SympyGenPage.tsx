@@ -20,7 +20,7 @@ import {
   generateQuestion,
 } from "../api/sympyService";
 import { toast } from "react-toastify";
-import { saveQuestion, saveAllQuestions, getAllSections, getQuestionTypesBySection } from "../api/openAiService";
+import { saveQuestion, saveAllQuestions, getAllSections, getQuestionTypesBySection, getKeywordsByFilter } from "../api/openAiService";
 import { useSympyQuestions } from "../context/SympyContext";
 
 export const SympyGeneratePage = () => {
@@ -32,6 +32,7 @@ export const SympyGeneratePage = () => {
   // State for autocomplete options
   const [sections, setSections] = useState<string[]>([]);
   const [questionTypes, setQuestionTypes] = useState<string[]>([]);
+  const [keywords, setKeywords] = useState<string[]>([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
 
   // Fetch sections and question types on mount
@@ -39,12 +40,14 @@ export const SympyGeneratePage = () => {
     const fetchOptions = async () => {
       setIsLoadingOptions(true);
       try {
-        const [sectionsResponse, questionTypesResponse] = await Promise.all([
+        const [sectionsResponse, questionTypesResponse, keywordsResponse] = await Promise.all([
           getAllSections(),
           getQuestionTypesBySection(),
+          getKeywordsByFilter(),
         ]);
         setSections(sectionsResponse.data);
         setQuestionTypes(questionTypesResponse.data);
+        setKeywords(keywordsResponse.data);
       } catch (error) {
         console.error("Error fetching options:", error);
         toast.error("Failed to load options. Please refresh the page.");
@@ -55,20 +58,24 @@ export const SympyGeneratePage = () => {
     fetchOptions();
   }, []);
 
-  // Refresh question types when section changes
+  // Refresh question types and keywords when section/questionType/difficulty changes
   useEffect(() => {
-    const fetchQuestionTypes = async () => {
+    const fetchDependentOptions = async () => {
       try {
-        const response = await getQuestionTypesBySection(form.section);
-        setQuestionTypes(response.data);
+        const [questionTypesResponse, keywordsResponse] = await Promise.all([
+          getQuestionTypesBySection(form.section),
+          getKeywordsByFilter(form.section, form.question_type, form.difficulty),
+        ]);
+        setQuestionTypes(questionTypesResponse.data);
+        setKeywords(keywordsResponse.data);
       } catch (error) {
-        console.error("Error fetching question types:", error);
+        console.error("Error fetching question types or keywords:", error);
       }
     };
-    if (form.section) {
-      fetchQuestionTypes();
+    if (form.section || form.question_type || form.difficulty) {
+      fetchDependentOptions();
     }
-  }, [form.section]);
+  }, [form.section, form.question_type, form.difficulty]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>
@@ -165,12 +172,17 @@ export const SympyGeneratePage = () => {
       toast.error("Please fill in Section, Question Type, and Difficulty before saving.");
       return;
     }
+    if (!form.keywords?.length) {
+      toast.error("Please select at least one keyword before adding to the database.");
+      return;
+    }
     try {
       await saveQuestion({
         ...generatedQuestionInfo,
         section: form.section,
         questionType: form.question_type,
         difficulty: form.difficulty,
+        keywords: form.keywords,
         responseId: prevResponseId,
         graphImg: generatedQuestionInfo.graphImg,
       } as QuestionSaveRequestBody);
@@ -187,6 +199,10 @@ export const SympyGeneratePage = () => {
       toast.error("Please fill in Section, Question Type, and Difficulty before saving.");
       return;
     }
+    if (!form.keywords?.length) {
+      toast.error("Please select at least one keyword before adding to the database.");
+      return;
+    }
     const questionSaveRequestBody: QuestionSaveRequestBody[] = questions.map(
       (question, index) =>
       ({
@@ -195,7 +211,8 @@ export const SympyGeneratePage = () => {
         difficulty: form.difficulty,
         question: question,
         correctAnswer: correctAnswers[index],
-        mcqAnswers: mcqAnswers[index].split(",") || [],
+        mcqAnswers: mcqAnswers[index]?.split(",") || [],
+        keywords: form.keywords,
         responseId: prevResponseId,
         graphImg: graphImages[index] || undefined,
       } as QuestionSaveRequestBody)
@@ -299,6 +316,30 @@ export const SympyGeneratePage = () => {
               />
               <label>Generate MCQ</label>
             </Box>
+
+            <Autocomplete
+              multiple
+              freeSolo
+              options={keywords}
+              value={form.keywords ?? []}
+              loading={isLoadingOptions}
+              onChange={(_event, newValue) => {
+                setForm((prev) => ({
+                  ...prev,
+                  keywords: Array.isArray(newValue) ? newValue : [],
+                }));
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Keywords"
+                  name="keywords"
+                  fullWidth
+                  placeholder="e.g. limits, continuity"
+                  helperText="Type keywords and press Enter to add them, or select from existing options"
+                />
+              )}
+            />
 
 
             <Button type="submit" variant="contained">

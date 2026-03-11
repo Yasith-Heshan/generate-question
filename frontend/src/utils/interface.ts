@@ -76,6 +76,7 @@ export interface SympyGeneratorRequestBody {
   difficulty: number;
   questions_count: number;
   mcq: boolean;
+  keywords?: string[];
 }
 
 export interface SympyGeneratorResponseItem {
