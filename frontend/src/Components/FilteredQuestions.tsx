@@ -85,6 +85,20 @@ const FilteredQuestions = ({
                   {`Question ${index + 1}: ${filteredQuestionResponseItems[index].question}`}
                 </MathJax>
               </h3>
+              {filteredQuestionResponseItems[index].graphImg && (
+                <Box sx={{ marginY: 2 }}>
+                  <img
+                    src={`data:image/png;base64,${filteredQuestionResponseItems[index].graphImg}`}
+                    alt={`Graph for question ${index + 1}`}
+                    style={{
+                      maxWidth: "100%",
+                      height: "auto",
+                      borderRadius: "8px",
+                      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+                    }}
+                  />
+                </Box>
+              )}
               <h4>
                 <MathJax inline>{`Detailed Answer: ${filteredQuestionResponseItems[index].detailedAnswer ?? "Not provided"
                   }`}</MathJax>

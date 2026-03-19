@@ -53,6 +53,7 @@ export interface QuestionFilterResponseItem {
   correctAnswer: string;
   keywords?: string[];
   mcqAnswers?: string[];
+  graphImg?: string;  // Base64 encoded graph image
 }
 
 export interface QuestionUpdateRequestBody {
