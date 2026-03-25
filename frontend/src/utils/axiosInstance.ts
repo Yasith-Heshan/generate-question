@@ -9,6 +9,14 @@ export const openAiAxiosInstance = axios.create({
   },
 });
 
+openAiAxiosInstance.interceptors.request.use((config) => {
+  const token = localStorage.getItem("access_token");
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 const sympyBaseURL = import.meta.env.VITE_SYMPY_GENERATOR_BASE_URL;
 
 export const sympyAxiosInstance = axios.create({
@@ -16,4 +24,12 @@ export const sympyAxiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+});
+
+sympyAxiosInstance.interceptors.request.use((config) => {
+  const token = localStorage.getItem("access_token");
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });

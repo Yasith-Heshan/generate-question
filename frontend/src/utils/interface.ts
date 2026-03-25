@@ -86,3 +86,19 @@ export interface SympyGeneratorResponseItem {
   other_solutions?: string[];
   graph_img?: string;
 }
+
+export interface UserCreateRequest {
+  username: string;
+  email: string;
+  password: string;
+}
+
+export interface UserLoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
+}

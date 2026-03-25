@@ -16,13 +16,19 @@ import Button from "@mui/material/Button";
 import { Link, useLocation } from "react-router-dom";
 
 const drawerWidth = 240;
-const navItems = [
-  { name: "OpenAI Gen", path: "/" },
-  { name: "Simpy Gen", path: "/sympy" },
-  { name: "View", path: "/view" },
-];
 
 export default function DrawerAppBar() {
+  const isAuthenticated = Boolean(localStorage.getItem("access_token"));
+  const navItems = isAuthenticated
+    ? [
+        { name: "OpenAI Gen", path: "/" },
+        { name: "Sympy Gen", path: "/sympy" },
+        { name: "View", path: "/view" },
+        { name: "Logout", path: "/logout" },
+      ]
+    : [
+        { name: "Login", path: "/auth" },
+      ];
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const location = useLocation();
 
@@ -80,11 +86,19 @@ export default function DrawerAppBar() {
           <Box sx={{ display: { xs: "none", sm: "block" } }}>
             {navItems.map((item, index) => {
               const isActive = location.pathname === item.path;
+              const handleClick = () => {
+                if (item.path === "/logout") {
+                  localStorage.removeItem("access_token");
+                  window.location.href = "/auth";
+                }
+              };
+
               return (
                 <Link
-                  to={item.path}
+                  to={item.path === "/logout" ? "#" : item.path}
                   key={index}
                   style={{ textDecoration: "none", color: "#fff" }}
+                  onClick={handleClick}
                 >
                   <Button
                     key={index}

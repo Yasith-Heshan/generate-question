@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.api.v1.question_controller import questionController
+from app.api.v1.auth_controller import router as authController
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import init_db
 import os
@@ -40,5 +41,6 @@ app.add_middleware(
 )
 
 app.include_router(questionController, prefix="/api/v1")
+app.include_router(authController, prefix="/api/v1/auth")
 
 # testing command

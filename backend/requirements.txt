@@ -6,3 +6,4 @@ openai
 email-validator
 motor
 beanie
+python-jose[cryptography]

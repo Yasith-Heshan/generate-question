@@ -4,6 +4,8 @@ import FilterQuestionsPage from "./pages/FilterQuestionsPage";
 import { Routes, Route } from 'react-router-dom';
 import { QuestionGeneratePage } from "./pages/QuestionGeneratePage";
 import { SympyGeneratePage } from "./pages/SympyGenPage";
+import AuthPage from "./pages/AuthPage";
+import RequireAuth from "./components/RequireAuth";
 import { QuestionProvider } from "./context/QuestionContext";
 import { FilterProvider } from "./context/FilterContext";
 import { SympyProvider } from "./context/SympyContext";
@@ -15,9 +17,10 @@ function App() {
     <SympyProvider>
       <AppBar />
       <Routes>
-        <Route path="/" element={<QuestionGeneratePage />} />
-        <Route path="/sympy" element={<SympyGeneratePage />} />
-        <Route path="/view" element={<FilterQuestionsPage />} />
+        <Route path="/" element={<RequireAuth><QuestionGeneratePage /></RequireAuth>} />
+        <Route path="/sympy" element={<RequireAuth><SympyGeneratePage /></RequireAuth>} />
+        <Route path="/view" element={<RequireAuth><FilterQuestionsPage /></RequireAuth>} />
+        <Route path="/auth" element={<AuthPage />} />
       </Routes>
       <ToastContainer
         position="top-right"
