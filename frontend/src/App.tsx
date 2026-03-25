@@ -5,7 +5,7 @@ import { Routes, Route } from 'react-router-dom';
 import { QuestionGeneratePage } from "./pages/QuestionGeneratePage";
 import { SympyGeneratePage } from "./pages/SympyGenPage";
 import AuthPage from "./pages/AuthPage";
-import RequireAuth from "./components/RequireAuth";
+import RequireAuth from "./Components/RequireAuth";
 import { QuestionProvider } from "./context/QuestionContext";
 import { FilterProvider } from "./context/FilterContext";
 import { SympyProvider } from "./context/SympyContext";

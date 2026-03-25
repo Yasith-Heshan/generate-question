@@ -32,7 +32,7 @@ const FilteredQuestions = ({
     loader: { load: ["input/tex", "output/chtml"] },
   };
 
-  const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };

@@ -1,5 +1,5 @@
 import { openAiAxiosInstance as axios } from "../utils/axiosInstance";
-import type { UserCreateRequest, UserLoginRequest, AuthResponse } from "../utils/interface";
+import type { UserCreateRequest, UserLoginRequest } from "../utils/interface";
 
 export const signup = async (user: UserCreateRequest) => {
   return await axios.post("/api/v1/auth/signup", user);
