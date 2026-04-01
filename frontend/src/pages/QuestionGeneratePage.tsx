@@ -24,6 +24,7 @@ import {
   getQuestionTypesBySection,
   getKeywordsByFilter
 } from "../api/openAiService";
+import { getProfile } from "../api/authService";
 import { toast } from "react-toastify";
 import { FileUploader } from "react-drag-drop-files";
 import { useQuestions } from "../context/QuestionContext";
@@ -253,6 +254,9 @@ export const QuestionGeneratePage = () => {
         return;
       }
 
+      const profileResponse = await getProfile();
+      const userId = profileResponse.data.username;
+
       await saveQuestion({
         ...generatedQuestionInfo,
         section: form.section,
@@ -262,6 +266,7 @@ export const QuestionGeneratePage = () => {
         // attach responseId from the most recent generation so backend can
         // record which batch produced this question
         responseId: prevResponseId,
+        userId: userId,
       } as QuestionSaveRequestBody);
       removeAddedQuestion(generatedQuestionInfo.index);
       toast.success("Question added to the database successfully!");
@@ -272,23 +277,27 @@ export const QuestionGeneratePage = () => {
   }
 
   const handleAddAllToDB = async () => {
-    const questionSaveRequestBody: QuestionSaveRequestBody[] = questions.map(
-      (question, index) =>
-      ({
-        section: form.section,
-        questionType: form.questionType,
-        difficulty: form.difficulty,
-        question: question,
-        detailedAnswer: detailedAnswers
-          ? detailedAnswers[index]
-          : undefined,
-        correctAnswer: correctAnswers[index],
-        mcqAnswers: mcqAnswers[index].split(",") || [],
-        keywords: form.keywords,
-        responseId: prevResponseId,
-      } as QuestionSaveRequestBody)
-    );
     try {
+      const profileResponse = await getProfile();
+      const userId = profileResponse.data.username;
+
+      const questionSaveRequestBody: QuestionSaveRequestBody[] = questions.map(
+        (question, index) =>
+        ({
+          section: form.section,
+          questionType: form.questionType,
+          difficulty: form.difficulty,
+          question: question,
+          detailedAnswer: detailedAnswers
+            ? detailedAnswers[index]
+            : undefined,
+          correctAnswer: correctAnswers[index],
+          mcqAnswers: mcqAnswers[index].split(",") || [],
+          keywords: form.keywords,
+          responseId: prevResponseId,
+          userId: userId,
+        } as QuestionSaveRequestBody)
+      );
       await saveAllQuestions(questionSaveRequestBody);
       toast.success("All questions added to the database successfully!");
       clearState();

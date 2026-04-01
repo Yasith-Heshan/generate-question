@@ -13,6 +13,7 @@ class QuestionModel(Document):
     responseId: Optional[str] = None  # Response identifier from AI generation
     graphImg: Optional[str] = None  # Optional base64 graph image
     is_deleted: Optional[bool] = False
+    userId: Optional[str] = None
 
     class Settings:
         name = "questions"  # Collection name

@@ -98,6 +98,15 @@ const FilteredQuestions = ({
                     {`Keywords: ${question.keywords?.join(", ") ?? "None"}`}
                   </MathJax>
                 </h3>
+                {question.userId && (
+                  <h3>
+                    {" "}
+                    <MathJax inline>
+                      {" "}
+                      {`User: ${question.userId}`}
+                    </MathJax>
+                  </h3>
+                )}
                 <h3>
                   {" "}
                   <MathJax inline>

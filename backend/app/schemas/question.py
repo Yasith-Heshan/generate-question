@@ -37,6 +37,7 @@ class Question(BaseModel):
     keywords: Optional[List[str]] = []  # Optional field for keywords associated with the question
     responseId: Optional[str] = None  # Store the generation response ID
     graphImg: Optional[str] = None  # Optional base64 graph image
+    userId: Optional[str] = None
     
 class QuestionFilterRequestBody(BaseModel):
     section:Optional[str] = None

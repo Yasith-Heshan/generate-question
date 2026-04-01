@@ -17,10 +17,12 @@ export interface QuestionSaveRequestBody {
   difficulty: number;
   question: string;
   correctAnswer: string;
+  detailedAnswer?: string;
   mcqAnswers?: string[];
   keywords?: string[];
   responseId?:string;
   graphImg?: string;
+  userId?: string;
 }
 
 export interface GeneratedQuestionInfo {
@@ -54,6 +56,7 @@ export interface QuestionFilterResponseItem {
   keywords?: string[];
   mcqAnswers?: string[];
   graphImg?: string;  // Base64 encoded graph image
+  userId?: string;
 }
 
 export interface QuestionUpdateRequestBody {

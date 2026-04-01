@@ -279,6 +279,7 @@ async def add_to_db(
     question: Question
 ):
     try:
+        print("Saving question with userId:", question.userId)
         doc= QuestionModel(**question.dict())
         await doc.insert()
         
