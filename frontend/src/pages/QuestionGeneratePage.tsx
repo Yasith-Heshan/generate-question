@@ -48,8 +48,31 @@ export const QuestionGeneratePage = () => {
   const [questionTypes, setQuestionTypes] = useState<string[]>([]);
   const [keywords, setKeywords] = useState<string[]>([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
+  const [sectionError, setSectionError] = useState<string>("");
+  const [questionTypeError, setQuestionTypeError] = useState<string>("");
 
   const fileTypes = ["JPG", "JPEG", "PNG", "GIF", "WEBP"];
+
+  // Validation functions
+  const validateSection = (section: string): string => {
+    if (!section) return "";
+    // Format: B22_Ch02 (letter + numbers + underscore + letters + numbers)
+    const sectionPattern = /^[A-Z]\d+_[A-Za-z]+\d+$/;
+    if (!sectionPattern.test(section)) {
+      return "Section must follow format: B22_Ch02 (letter + numbers + underscore + letters + numbers)";
+    }
+    return "";
+  };
+
+  const validateQuestionType = (questionType: string): string => {
+    if (!questionType) return "";
+    // Format: 22_E_2__4_62 (numbers, underscores, letters, numbers in specific format)
+    const questionTypePattern = /^[\d]+_[A-Z](_\d+)*(_\d+)*$/;
+    if (!questionTypePattern.test(questionType)) {
+      return "Question Type must follow format: 22_E_2__4_62 (numbers, underscores, letters, and numbers)";
+    }
+    return "";
+  };
 
   // Fetch sections and question types on component mount
   useEffect(() => {
@@ -180,6 +203,22 @@ export const QuestionGeneratePage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate section and question type before submission
+    const sectionErr = validateSection(form.section);
+    const questionTypeErr = validateQuestionType(form.questionType);
+    
+    if (sectionErr) {
+      setSectionError(sectionErr);
+      toast.error("Invalid section format. " + sectionErr);
+      return;
+    }
+    
+    if (questionTypeErr) {
+      setQuestionTypeError(questionTypeErr);
+      toast.error("Invalid question type format. " + questionTypeErr);
+      return;
+    }
 
     try {
       clearState();
@@ -323,12 +362,17 @@ export const QuestionGeneratePage = () => {
               options={sections}
               value={form.section}
               onChange={(_event, newValue) => {
+                const newSection = newValue || "";
+                const error = validateSection(newSection);
+                setSectionError(error);
                 setForm((prev) => ({
                   ...prev,
-                  section: newValue || "",
+                  section: newSection,
                 }));
               }}
               onInputChange={(_event, newInputValue) => {
+                const error = validateSection(newInputValue);
+                setSectionError(error);
                 setForm((prev) => ({
                   ...prev,
                   section: newInputValue,
@@ -343,6 +387,8 @@ export const QuestionGeneratePage = () => {
                   name="section"
                   fullWidth
                   required
+                  error={!!sectionError}
+                  helperText={sectionError || "Format: B22_Ch02"}
                 />
               )}
             />
@@ -351,12 +397,17 @@ export const QuestionGeneratePage = () => {
               options={questionTypes}
               value={form.questionType}
               onChange={(_event, newValue) => {
+                const newQuestionType = newValue || "";
+                const error = validateQuestionType(newQuestionType);
+                setQuestionTypeError(error);
                 setForm((prev) => ({
                   ...prev,
-                  questionType: newValue || "",
+                  questionType: newQuestionType,
                 }));
               }}
               onInputChange={(_event, newInputValue) => {
+                const error = validateQuestionType(newInputValue);
+                setQuestionTypeError(error);
                 setForm((prev) => ({
                   ...prev,
                   questionType: newInputValue,
@@ -371,6 +422,8 @@ export const QuestionGeneratePage = () => {
                   name="questionType"
                   fullWidth
                   required
+                  error={!!questionTypeError}
+                  helperText={questionTypeError || "Format: 22_E_2__4_62"}
                 />
               )}
             />
