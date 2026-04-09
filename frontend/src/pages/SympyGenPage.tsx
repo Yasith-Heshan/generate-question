@@ -89,12 +89,12 @@ export const SympyGeneratePage = () => {
   };
 
   const formatAnswer = (answer: string): string => {
-    return answer.replace(/\$([^$]+)\$/g, (_, expr) => `$$${expr}$$`)
-  }
+    return answer.replace(/\$([^$]+)\$/g, (_, expr) => `$$${expr}$$`);
+  };
 
   const formatMcqAnswers = (answers: string[]): string[] => {
-    return answers.map((answer) =>
-      formatAnswer(answer)
+    return answers.map((answer, index) =>
+      `${index + 1}. ${formatAnswer(answer)}`
     );
   };
 
@@ -114,7 +114,7 @@ export const SympyGeneratePage = () => {
         questions.push(item.question);
         correctAnswers.push(formatAnswer(item.correct_solution));
         if (form.mcq && item.other_solutions) {
-          mcqAnswers.push(formatMcqAnswers(item.other_solutions).join(","));
+          mcqAnswers.push(formatMcqAnswers(item.other_solutions).join("\n"));
         }
         graphImages.push(item.graph_img ?? "");
       });

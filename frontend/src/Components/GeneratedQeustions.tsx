@@ -63,6 +63,13 @@ const GeneratedQuestions = ({
     setEditingQuestionIndex(null);
   };
 
+  const parseMcqAnswers = (answerString: string): string[] => {
+    if (answerString.includes("\n")) {
+      return answerString.split("\n").map((item) => item.trim()).filter((item) => item !== "");
+    }
+    return answerString.split(",").map((item) => item.trim()).filter((item) => item !== "");
+  };
+
   return (
     <Box sx={{ marginTop: 4 }}>
       <h2>Generated Questions</h2>
@@ -101,11 +108,16 @@ const GeneratedQuestions = ({
                   }`}</MathJax>
               </h4>
               {mcqAnswers && mcqAnswers[index] && (
-                <h4>
-                  <MathJax inline>
-                    {`MCQ Answers: ${mcqAnswers[index]}`}
-                  </MathJax>
-                </h4>
+                <Box sx={{ mt: 1 }}>
+                  <strong>MCQ Answers:</strong>
+                  <Box sx={{ mt: 1 }}>
+                    {parseMcqAnswers(mcqAnswers[index]).map((answer, answerIndex) => (
+                      <Box key={answerIndex} sx={{ mb: 0.5 }}>
+                        <MathJax inline>{answer}</MathJax>
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
               )}
             </MathJaxContext>
             {graphImages && graphImages[index] && (
@@ -135,7 +147,7 @@ const GeneratedQuestions = ({
                     ? detailedAnswers[index]
                     : undefined,
                   mcqAnswers: mcqAnswers?.[index]
-                    ? mcqAnswers[index].split(",")
+                    ? parseMcqAnswers(mcqAnswers[index])
                     : undefined,
                   graphImg: graphImages?.[index] || undefined,
                   index: index,
@@ -156,7 +168,9 @@ const GeneratedQuestions = ({
             question: questions[editingQuestionIndex],
             correctAnswer: correctAnswers[editingQuestionIndex],
             detailedAnswer: detailedAnswers?.[editingQuestionIndex] || "",
-            mcqAnswers: mcqAnswers?.[editingQuestionIndex]?.split(",") || [],
+            mcqAnswers: mcqAnswers?.[editingQuestionIndex]
+              ? parseMcqAnswers(mcqAnswers[editingQuestionIndex])
+              : [],
           }}
         />
       )}
