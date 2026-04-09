@@ -13,6 +13,7 @@ class QuestionModel(Document):
     responseId: Optional[str] = None
     graphImg: Optional[str] = None
     userId: Optional[str] = None
+    deleted: bool = False
 
     class Settings:
         name = "questions"  # Collection name

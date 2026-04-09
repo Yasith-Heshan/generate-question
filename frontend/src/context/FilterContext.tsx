@@ -37,6 +37,8 @@ const defaultForm: QuestionFilterRequestBody = {
   difficulty: 1,
   keywords: [],
   id: "",
+  includeDeleted: false,
+  showDeletedOnly: false,
 };
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);

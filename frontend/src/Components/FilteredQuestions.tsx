@@ -3,6 +3,7 @@ import Button from "@mui/material/Button";
 import Pagination from "@mui/material/Pagination";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import RestoreIcon from "@mui/icons-material/Restore";
 import { MathJaxContext, MathJax } from "better-react-mathjax";
 import type { QuestionFilterResponseItem } from "../utils/interface";
 import { useState } from "react";
@@ -11,12 +12,16 @@ interface FilteredQuestionsProps {
   filteredQuestionResponseItems: QuestionFilterResponseItem[];
   onEditQuestion: (question: QuestionFilterResponseItem) => void;
   onDeleteQuestion: (question: QuestionFilterResponseItem) => void;
+  onRestoreQuestion?: (question: QuestionFilterResponseItem) => void;
+  isDeletedView?: boolean;
 }
 
 const FilteredQuestions = ({
   filteredQuestionResponseItems,
   onEditQuestion,
   onDeleteQuestion,
+  onRestoreQuestion,
+  isDeletedView = false,
 }: FilteredQuestionsProps) => {
   const QUESTIONS_PER_PAGE = 5;
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,6 +50,7 @@ const FilteredQuestions = ({
       </Box>
       {displayedQuestions.map((question, relativeIndex) => {
         const absoluteIndex = startIndex + relativeIndex;
+        console.log("Question:", question.id, "deleted:", question.deleted);
         return (
           <Box
             key={absoluteIndex}
@@ -155,14 +161,27 @@ const FilteredQuestions = ({
                 >
                   Edit Question
                 </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<DeleteIcon />}
-                  onClick={() => onDeleteQuestion(question)}
-                  size="small"
-                >
-                  Delete Question
-                </Button>
+                {isDeletedView || question.deleted ? (
+                  console.log("Showing Undelete for question", question.id),
+                  <Button
+                    variant="outlined"
+                    startIcon={<RestoreIcon />}
+                    onClick={() => onRestoreQuestion?.(question)}
+                    size="small"
+                  >
+                    Undelete Question
+                  </Button>
+                ) : (
+                  console.log("Showing Delete for question", question.id),
+                  <Button
+                    variant="outlined"
+                    startIcon={<DeleteIcon />}
+                    onClick={() => onDeleteQuestion(question)}
+                    size="small"
+                  >
+                    Delete Question
+                  </Button>
+                )}
               </Box>
             </Box>
           </Box>

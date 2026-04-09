@@ -11,7 +11,7 @@ import {
 import Grid from "@mui/material/Grid";
 import { useState } from "react";
 import type { QuestionFilterResponseItem, QuestionUpdateRequestBody } from "../utils/interface";
-import { filterQuestions, getAllSections, getKeywordsByFilter, getQuestionTypesBySection, updateQuestion, deleteQuestion } from "../api/openAiService";
+import { filterQuestions, getAllSections, getKeywordsByFilter, getQuestionTypesBySection, updateQuestion, deleteQuestion, restoreQuestion } from "../api/openAiService";
 import FilteredQuestions from "../Components/FilteredQuestions";
 import EditQuestionModal from "../Components/EditQuestionModal";
 import { toast } from "react-toastify";
@@ -104,6 +104,8 @@ const FilterQuestionsPage = () => {
             difficulty: 1,
             keywords: [],
             id: "",
+            includeDeleted: false,
+            showDeletedOnly: false,
         });
         clearState();
     };
@@ -134,6 +136,7 @@ const FilterQuestionsPage = () => {
 
     // Handle deleting a question
     const handleDeleteQuestion = async (question: QuestionFilterResponseItem) => {
+        console.log("Attempting to delete question:", question.id, question);
         if (!question.id) {
             toast.error("Question ID is missing");
             return;
@@ -145,17 +148,44 @@ const FilterQuestionsPage = () => {
         if (!confirmed) return;
 
         try {
+            console.log("Calling delete API for ID:", question.id);
             await deleteQuestion(question.id);
+            console.log("Delete API call successful");
 
-            // Update the local state
-            setFiltedQuestions(prev =>
-                prev.filter(q => q.id !== question.id)
-            );
+            // Re-fetch the questions to update the list
+            const response = await filterQuestions(form);
+            setFiltedQuestions(response.data);
 
             toast.success(`Question ID ${question.id} deleted successfully!`);
         } catch (error) {
             console.error("Error deleting question:", error);
             toast.error("Failed to delete question. Please try again.");
+        }
+    };
+
+    // Handle restoring a question
+    const handleRestoreQuestion = async (question: QuestionFilterResponseItem) => {
+        if (!question.id) {
+            toast.error("Question ID is missing");
+            return;
+        }
+
+        const confirmed = window.confirm(
+            `Are you sure you want to restore question ID ${question.id}?`
+        );
+        if (!confirmed) return;
+
+        try {
+            await restoreQuestion(question.id);
+
+            // Re-fetch the questions to update the list
+            const response = await filterQuestions(form);
+            setFiltedQuestions(response.data);
+
+            toast.success(`Question ID ${question.id} restored successfully!`);
+        } catch (error) {
+            console.error("Error restoring question:", error);
+            toast.error("Failed to restore question. Please try again.");
         }
     };
 
@@ -309,6 +339,14 @@ const FilterQuestionsPage = () => {
                             freeSolo
                         />
 
+                        <Button
+                            type="button"
+                            variant={form.showDeletedOnly ? "contained" : "outlined"}
+                            onClick={() => setForm((prev) => ({ ...prev, showDeletedOnly: !prev.showDeletedOnly }))}
+                        >
+                            {form.showDeletedOnly ? "Show Active Questions" : "Show Deleted Questions"}
+                        </Button>
+
 
 
                         <Button type="submit" variant="contained">
@@ -342,6 +380,8 @@ const FilterQuestionsPage = () => {
                             filteredQuestionResponseItems={filteredQuestions}
                             onEditQuestion={handleEditQuestion}
                             onDeleteQuestion={handleDeleteQuestion}
+                            onRestoreQuestion={handleRestoreQuestion}
+                            isDeletedView={form.showDeletedOnly}
                         />
                     </Box>
                     <Box

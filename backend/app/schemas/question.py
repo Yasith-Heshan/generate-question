@@ -38,6 +38,7 @@ class Question(BaseModel):
     responseId: Optional[str] = None  # Store the generation response ID
     graphImg: Optional[str] = None  # Optional base64 graph image
     userId: Optional[str] = None
+    deleted: Optional[bool] = False
     
 class QuestionFilterRequestBody(BaseModel):
     section:Optional[str] = None
@@ -47,6 +48,8 @@ class QuestionFilterRequestBody(BaseModel):
     id: Optional[str] = None  # Optional field for filtering by question ID
     page: Optional[int] = 1
     limit: Optional[int] = 10
+    includeDeleted: Optional[bool] = False
+    showDeletedOnly: Optional[bool] = False
 
 class QuestionUpdateRequestBody(BaseModel):
     section: Optional[str] = None

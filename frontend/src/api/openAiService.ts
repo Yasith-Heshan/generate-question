@@ -41,6 +41,10 @@ export const filterQuestions = async (
   return await axios.post("/api/v1/filter_questions", questionFilterRequestBody);
 }
 
+export const restoreQuestion = async (questionId: string) => {
+  return await axios.put(`/api/v1/questions/${questionId}/restore`);
+}
+
 export const getAllSections = async () => {
   return await axios.get("/api/v1/sections");
 }

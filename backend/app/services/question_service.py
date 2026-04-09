@@ -327,6 +327,10 @@ async def _build_filters(questionFilterRequestBody: QuestionFilterRequestBody) -
     if questionFilterRequestBody.id:
         from beanie import PydanticObjectId
         filters["_id"] = PydanticObjectId(questionFilterRequestBody.id)
+    if questionFilterRequestBody.showDeletedOnly:
+        filters["deleted"] = True
+    elif not questionFilterRequestBody.includeDeleted:
+        filters["deleted"] = {"$ne": True}
     return filters
 
 
@@ -334,7 +338,11 @@ async def filter_questions_from_db(questionFilterRequestBody: QuestionFilterRequ
     """Return all questions matching the filters (no pagination)."""
     try:
         filters = await _build_filters(questionFilterRequestBody)
+        print(f"Filters: {filters}")
         questions = await QuestionModel.find(filters).to_list()
+        print(f"Found {len(questions)} questions")
+        for q in questions[:5]:  # Log first 5
+            print(f"Question {q.id}: deleted={getattr(q, 'deleted', 'not set')}")
         return questions
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

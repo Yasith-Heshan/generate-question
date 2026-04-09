@@ -43,6 +43,8 @@ export interface QuestionFilterRequestBody {
   difficulty: number;
   keywords?: string[];
   id?: string;  // Optional field for filtering by question ID
+  includeDeleted?: boolean;
+  showDeletedOnly?: boolean;
 }
 
 export interface QuestionFilterResponseItem {
@@ -57,6 +59,7 @@ export interface QuestionFilterResponseItem {
   mcqAnswers?: string[];
   graphImg?: string;  // Base64 encoded graph image
   userId?: string;
+  deleted?: boolean;
 }
 
 export interface QuestionUpdateRequestBody {

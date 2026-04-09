@@ -63,15 +63,51 @@ async def update_question(question_id: str, update_data: QuestionUpdateRequestBo
 async def get_all_sections():
     return await MongoDBAdapter.distinct_query('questions', 'section')
 
-@questionController.delete("/questions/{question_id}")
-async def delete(question_id):
+@questionController.put("/questions/{question_id}/restore")
+async def restore(question_id):
     db = MongoDBAdapter.get_db()
-    x=ObjectId(question_id)
-    result = await db["questions"].delete_one({"_id": x})
-
-    if result.deleted_count == 0:
-        print('not found')
+    x = ObjectId(question_id)
+    # First check if the question exists
+    question = await db["questions"].find_one({"_id": x})
+    if not question:
         raise HTTPException(status_code=404, detail="Question not found")
+    
+    # If not deleted, return success
+    if not question.get("deleted", False):
+        return {"message": "Question is already active"}
+    
+    # Set deleted to False
+    result = await db["questions"].update_one({"_id": x}, {"$set": {"deleted": False}})
+    return {"message": "Question restored successfully"}
+
+@questionController.delete("/questions/{question_id}")
+async def delete_question(question_id: str):
+    print(f"Attempting to delete question with ID: {question_id}")
+    db = MongoDBAdapter.get_db()
+    try:
+        x = ObjectId(question_id)
+    except Exception as e:
+        print(f"Invalid ObjectId: {question_id}, error: {e}")
+        raise HTTPException(status_code=400, detail="Invalid question ID")
+    
+    # First check if the question exists
+    question = await db["questions"].find_one({"_id": x})
+    print(f"Question found: {question is not None}")
+    if question:
+        print(f"Question deleted status: {question.get('deleted', 'not set')}")
+    
+    if not question:
+        print("Question not found")
+        raise HTTPException(status_code=404, detail="Question not found")
+    
+    # If already deleted, return success
+    if question.get("deleted", False):
+        print("Question already deleted")
+        return {"message": "Question is already deleted"}
+    
+    # Set deleted to True
+    result = await db["questions"].update_one({"_id": x}, {"$set": {"deleted": True}})
+    print(f"Update result: {result.modified_count} documents modified")
     return {"message": "Question deleted successfully"}
 
 @questionController.get("/keywords/filter", response_model=List[str], summary="Get Keywords by Filter", description="Get keywords filtered by section, question type, and difficulty", tags=["Metadata"])
