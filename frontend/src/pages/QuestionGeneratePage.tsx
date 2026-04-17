@@ -67,7 +67,7 @@ export const QuestionGeneratePage = () => {
   const validateQuestionType = (questionType: string): string => {
     if (!questionType) return "";
     // Format: 22_E_2__4_62 (numbers, underscores, letters, numbers in specific format)
-    const questionTypePattern = /^[\d]+_[A-Z](_\d+)*(_\d+)*$/;
+    const questionTypePattern = /^[\d]+_[A-Z]([_\d]+)*$/;
     if (!questionTypePattern.test(questionType)) {
       return "Question Type must follow format: 22_E_2__4_62 (numbers, underscores, letters, and numbers)";
     }
