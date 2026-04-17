@@ -149,7 +149,7 @@ def generate_math_word_problem(question_description,count=1,example_question=Non
         Do not wrap the JSON in triple backticks.
         Do not add explanations.
         """
-    if prevResponseId is "":
+    if prevResponseId == "":
         prevResponseId = None
     
 
