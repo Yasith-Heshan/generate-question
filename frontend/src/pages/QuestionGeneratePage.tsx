@@ -288,6 +288,53 @@ export const QuestionGeneratePage = () => {
     clearQuestions();
   };
 
+  const handleGenerateBasedOnThis = async (exampleQuestions: string) => {
+    try {
+      setForm((prev) => ({
+        ...prev,
+        exampleQuestion: exampleQuestions,
+      }));
+      
+      // Create a synthetic event to avoid type issues
+      const submitEvent = {
+        preventDefault: () => {},
+      } as React.FormEvent;
+
+      // Validate form
+      const sectionErr = validateSection(form.section);
+      const questionTypeErr = validateQuestionType(form.questionType);
+      
+      if (sectionErr || questionTypeErr) {
+        toast.error("Please fix validation errors before regenerating.");
+        return;
+      }
+
+      // Trigger generation with updated form
+      setIsGenerating(true);
+      const updatedForm = { ...form, exampleQuestion: exampleQuestions };
+      const response = await generateQuestion(updatedForm);
+      let tempMcqAnswers: string[] = [];
+      if (response.data.mcqAnswers) {
+        tempMcqAnswers = (response.data.mcqAnswers as string[]).map(
+          (mcqAnswer) => mcqAnswer.replace(/^\[|\]|\]\n\n|\]|---$/g, '')
+        )
+      }
+
+      setQuestions(response.data.questions);
+      setCorrectAnswers(response.data.correctAnswers);
+      setDetailedAnswers(response.data.detailedAnswers || []);
+      setMcqAnswers(tempMcqAnswers);
+      setDifficulties(new Array(response.data.questions.length).fill(form.difficulty));
+      setPrevResponseId(response.data.responseId || "");
+      toast.success("Generated new questions based on your examples!");
+    } catch (error) {
+      console.error("Error generating based on examples:", error);
+      toast.error("Failed to generate questions. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   async function handleAddToDB(
     generatedQuestionInfo: GeneratedQuestionInfo
   ): Promise<void> {
@@ -609,6 +656,7 @@ export const QuestionGeneratePage = () => {
               difficulties={difficulties}
               onAddToDB={handleAddToDB}
               onEditQuestion={handleEditQuestion}
+              onGenerateBasedOnThis={handleGenerateBasedOnThis}
             />
           </Box>
           <Box

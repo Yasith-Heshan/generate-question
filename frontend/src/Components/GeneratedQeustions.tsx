@@ -1,7 +1,10 @@
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Chip from "@mui/material/Chip";
 import { MathJaxContext, MathJax } from "better-react-mathjax";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { GeneratedQuestionInfo } from "../utils/interface";
 import EditQuestionModal from "./EditQuestionModal";
 
@@ -23,6 +26,7 @@ interface GeneratedQuestionsProps {
       difficulty: number;
     }
   ) => void;
+  onGenerateBasedOnThis?: (exampleQuestions: string) => void;
 }
 
 const GeneratedQuestions = ({
@@ -34,9 +38,27 @@ const GeneratedQuestions = ({
   difficulties,
   onAddToDB,
   onEditQuestion,
+  onGenerateBasedOnThis,
 }: GeneratedQuestionsProps) => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
+  const [selectedQuestions, setSelectedQuestions] = useState<Set<number>>(new Set());
+  const [newQuestionsCount, setNewQuestionsCount] = useState(0);
+  const prevCountRef = useRef(0);
+  const questionsContainerRef = useRef<HTMLDivElement>(null);
+
+  // Track when new questions are generated and show them
+  useEffect(() => {
+    if (questions.length > prevCountRef.current) {
+      // New questions were generated
+      const count = questions.length - prevCountRef.current;
+      setNewQuestionsCount(count);
+      prevCountRef.current = questions.length;
+      if (questionsContainerRef.current) {
+        questionsContainerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  }, [questions.length]);
 
   if (!questions || questions.length === 0) return null;
 
@@ -67,6 +89,26 @@ const GeneratedQuestions = ({
     setEditingQuestionIndex(null);
   };
 
+  const handleSelectQuestion = (index: number) => {
+    setSelectedQuestions((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedQuestions.size === questions.length) {
+      setSelectedQuestions(new Set());
+    } else {
+      setSelectedQuestions(new Set(questions.map((_, i) => i)));
+    }
+  };
+
   const parseMcqAnswers = (answerString: string): string[] => {
     if (answerString.includes("\n")) {
       return answerString.split("\n").map((item) => item.trim()).filter((item) => item !== "");
@@ -75,8 +117,40 @@ const GeneratedQuestions = ({
   };
 
   return (
-    <Box sx={{ marginTop: 4 }}>
+    <Box sx={{ marginTop: 4 }} ref={questionsContainerRef}>
       <h2>Generated Questions</h2>
+      {onGenerateBasedOnThis && questions.length > 0 && (
+        <Box sx={{ mb: 3, p: 2, bgcolor: "#e3f2fd", borderRadius: 1 }}>
+          <Box sx={{ mb: 2 }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={selectedQuestions.size === questions.length && questions.length > 0}
+                  indeterminate={selectedQuestions.size > 0 && selectedQuestions.size < questions.length}
+                  onChange={handleSelectAll}
+                />
+              }
+              label={`Select All (${selectedQuestions.size}/${questions.length} selected)`}
+            />
+          </Box>
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            disabled={selectedQuestions.size === 0}
+            onClick={() => {
+              const selectedIndices = Array.from(selectedQuestions).sort((a, b) => a - b);
+              const exampleQuestionsText = selectedIndices
+                .map((i) => `Q${i + 1}: ${questions[i]}\nAnswer: ${correctAnswers[i]}${detailedAnswers?.[i] ? `\nDetailed: ${detailedAnswers[i]}` : ""}${mcqAnswers?.[i] ? `\nOptions: ${mcqAnswers[i]}` : ""}\n`)
+                .join("\n");
+              onGenerateBasedOnThis(exampleQuestionsText);
+              setSelectedQuestions(new Set());
+            }}
+          >
+            Generate Based on Selected ({selectedQuestions.size}) Questions
+          </Button>
+        </Box>
+      )}
       {questions.map((_, index) => (
         <Box
           sx={{
@@ -85,6 +159,8 @@ const GeneratedQuestions = ({
             borderRadius: 1,
             boxShadow: 1,
             marginBottom: 2,
+            border: index >= (questions.length - newQuestionsCount) ? "2px solid #4caf50" : "none",
+            backgroundColor: index >= (questions.length - newQuestionsCount) ? "#f1f8f4" : "#f5f5f5",
           }}
         >
           <Box
@@ -100,6 +176,9 @@ const GeneratedQuestions = ({
                   {" "}
                   {`Question ${index + 1}: ${questions[index]}`}
                 </MathJax>
+                {index >= (questions.length - newQuestionsCount) && (
+                  <Chip label="NEW" color="success" size="small" sx={{ ml: 2 }} />
+                )}
               </h3>
               <Box sx={{ mb: 1 }}>
                 <strong>Difficulty: </strong>
@@ -141,33 +220,44 @@ const GeneratedQuestions = ({
               </Box>
             )}
           </Box>
-          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 2 }}>
-            <Button
-              variant="outlined"
-              onClick={() => handleEditClick(index)}
-            >
-              Edit
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={() => {
-                onAddToDB({
-                  question: questions[index],
-                  correctAnswer: correctAnswers[index],
-                  detailedAnswer: detailedAnswers
-                    ? detailedAnswers[index]
-                    : undefined,
-                  mcqAnswers: mcqAnswers?.[index]
-                    ? parseMcqAnswers(mcqAnswers[index])
-                    : undefined,
-                  difficulty: difficulties?.[index] || 1,
-                  graphImg: graphImages?.[index] || undefined,
-                  index: index,
-                });
-              }}
-            >
-              Add to DB
-            </Button>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 2 }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={selectedQuestions.has(index)}
+                  onChange={() => handleSelectQuestion(index)}
+                />
+              }
+              label="Use as example"
+            />
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Button
+                variant="outlined"
+                onClick={() => handleEditClick(index)}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  onAddToDB({
+                    question: questions[index],
+                    correctAnswer: correctAnswers[index],
+                    detailedAnswer: detailedAnswers
+                      ? detailedAnswers[index]
+                      : undefined,
+                    mcqAnswers: mcqAnswers?.[index]
+                      ? parseMcqAnswers(mcqAnswers[index])
+                      : undefined,
+                    difficulty: difficulties?.[index] || 1,
+                    graphImg: graphImages?.[index] || undefined,
+                    index: index,
+                  });
+                }}
+              >
+                Add to DB
+              </Button>
+            </Box>
           </Box>
         </Box>
       ))}

@@ -171,6 +171,44 @@ export const SympyGeneratePage = () => {
     clearQuestions();
   };
 
+  const handleGenerateBasedOnThis = async (exampleQuestions: string) => {
+    try {
+      setForm((prev) => ({
+        ...prev,
+        keywords: prev.keywords,
+      }));
+
+      setIsGenerating(true);
+      const updatedForm = { ...form, keywords: form.keywords };
+      const response = await generateQuestion(updatedForm);
+      let questions: string[] = [];
+      let correctAnswers: string[] = [];
+      let mcqAnswers: string[] = [];
+      let graphImages: string[] = [];
+      
+      response.data.forEach((item: SympyGeneratorResponseItem) => {
+        questions.push(item.question);
+        correctAnswers.push(formatAnswer(item.correct_solution));
+        if (form.mcq && item.other_solutions) {
+          mcqAnswers.push(formatMcqAnswers(item.other_solutions).join("\n"));
+        }
+        graphImages.push(item.graph_img ?? "");
+      });
+      
+      setQuestions(questions);
+      setCorrectAnswers(correctAnswers);
+      setMcqAnswers(mcqAnswers);
+      setGraphImages(graphImages);
+      setDifficulties(new Array(questions.length).fill(form.difficulty));
+      toast.success("Generated new questions based on your examples!");
+    } catch (error) {
+      console.error("Error generating based on examples:", error);
+      toast.error("Failed to generate questions. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   async function handleAddToDB(
     generatedQuestionInfo: GeneratedQuestionInfo
   ): Promise<void> {
@@ -375,6 +413,7 @@ export const SympyGeneratePage = () => {
               difficulties={difficulties}
               onAddToDB={handleAddToDB}
               onEditQuestion={handleEditQuestion}
+              onGenerateBasedOnThis={handleGenerateBasedOnThis}
             />
           </Box>
           <Box
