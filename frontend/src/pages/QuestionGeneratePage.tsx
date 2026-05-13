@@ -35,6 +35,7 @@ export const QuestionGeneratePage = () => {
     correctAnswers, setCorrectAnswers,
     detailedAnswers, setDetailedAnswers,
     mcqAnswers, setMcqAnswers,
+    difficulties, setDifficulties,
     prevResponseId, setPrevResponseId,
     form, setForm,
     clearQuestions,
@@ -235,6 +236,7 @@ export const QuestionGeneratePage = () => {
       setCorrectAnswers(response.data.correctAnswers);
       setDetailedAnswers(response.data.detailedAnswers || []);
       setMcqAnswers(tempMcqAnswers);
+      setDifficulties(new Array(response.data.questions.length).fill(form.difficulty));
       setPrevResponseId(response.data.responseId || "");
 
     } catch (error) {
@@ -248,7 +250,9 @@ export const QuestionGeneratePage = () => {
   const removeAddedQuestion = (index: number) => {
     setQuestions((prev) => prev.filter((_, i) => i !== index));
     setCorrectAnswers((prev) => prev.filter((_, i) => i !== index));
+    setDetailedAnswers((prev) => prev.filter((_, i) => i !== index));
     setMcqAnswers((prev) => prev.filter((_, i) => i !== index));
+    setDifficulties((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleEditQuestion = (
@@ -258,6 +262,7 @@ export const QuestionGeneratePage = () => {
       correctAnswer: string;
       detailedAnswer?: string;
       mcqAnswers: string[];
+      difficulty: number;
     }
   ) => {
     setQuestions((prev) =>
@@ -271,6 +276,9 @@ export const QuestionGeneratePage = () => {
     );
     setMcqAnswers((prev) =>
       prev.map((m, i) => i === index ? editedData.mcqAnswers.join(",") : m)
+    );
+    setDifficulties((prev) =>
+      prev.map((diff, i) => i === index ? editedData.difficulty : diff)
     );
   };
 
@@ -300,7 +308,7 @@ export const QuestionGeneratePage = () => {
         ...generatedQuestionInfo,
         section: form.section,
         questionType: form.questionType,
-        difficulty: form.difficulty,
+        difficulty: generatedQuestionInfo.difficulty,
         keywords: form.keywords,
         // attach responseId from the most recent generation so backend can
         // record which batch produced this question
@@ -325,7 +333,7 @@ export const QuestionGeneratePage = () => {
         ({
           section: form.section,
           questionType: form.questionType,
-          difficulty: form.difficulty,
+          difficulty: difficulties[index] || form.difficulty,
           question: question,
           detailedAnswer: detailedAnswers
             ? detailedAnswers[index]
@@ -598,6 +606,7 @@ export const QuestionGeneratePage = () => {
               detailedAnswers={detailedAnswers}
               correctAnswers={correctAnswers}
               mcqAnswers={mcqAnswers}
+              difficulties={difficulties}
               onAddToDB={handleAddToDB}
               onEditQuestion={handleEditQuestion}
             />

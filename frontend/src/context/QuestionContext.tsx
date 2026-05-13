@@ -7,6 +7,7 @@ interface QuestionState {
   correctAnswers: string[];
   detailedAnswers: string[];
   mcqAnswers: string[];
+  difficulties: number[];
   prevResponseId: string;
   form: QuestionGenerationRequestBody;
 }
@@ -16,6 +17,7 @@ interface QuestionContextType extends QuestionState {
   setCorrectAnswers: Dispatch<SetStateAction<string[]>>;
   setDetailedAnswers: Dispatch<SetStateAction<string[]>>;
   setMcqAnswers: Dispatch<SetStateAction<string[]>>;
+  setDifficulties: Dispatch<SetStateAction<number[]>>;
   setPrevResponseId: Dispatch<SetStateAction<string>>;
   setForm: Dispatch<SetStateAction<QuestionGenerationRequestBody>>;
   clearQuestions: () => void;
@@ -49,6 +51,7 @@ export function QuestionProvider({ children }: { children: ReactNode }) {
   const [correctAnswers, setCorrectAnswers] = usePersistedState<string[]>("gq_correctAnswers", []);
   const [detailedAnswers, setDetailedAnswers] = usePersistedState<string[]>("gq_detailedAnswers", []);
   const [mcqAnswers, setMcqAnswers] = usePersistedState<string[]>("gq_mcqAnswers", []);
+  const [difficulties, setDifficulties] = usePersistedState<number[]>("gq_difficulties", []);
   const [prevResponseId, setPrevResponseId] = usePersistedState<string>("gq_prevResponseId", "");
   const [form, setForm] = usePersistedState<QuestionGenerationRequestBody>("gq_form", {
     section: "",
@@ -63,7 +66,9 @@ export function QuestionProvider({ children }: { children: ReactNode }) {
   const clearQuestions = () => {
     setQuestions([]);
     setCorrectAnswers([]);
+    setDetailedAnswers([]);
     setMcqAnswers([]);
+    setDifficulties([]);
   };
 
   return (
@@ -73,12 +78,14 @@ export function QuestionProvider({ children }: { children: ReactNode }) {
         correctAnswers,
         detailedAnswers,
         mcqAnswers,
+        difficulties,
         prevResponseId,
         form,
         setQuestions,
         setCorrectAnswers,
         setDetailedAnswers,
         setMcqAnswers,
+        setDifficulties,
         setPrevResponseId,
         setForm,
         clearQuestions,

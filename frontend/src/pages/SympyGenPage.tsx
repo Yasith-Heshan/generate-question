@@ -24,7 +24,7 @@ import { saveQuestion, saveAllQuestions, getAllSections, getQuestionTypesBySecti
 import { useSympyQuestions } from "../context/SympyContext";
 
 export const SympyGeneratePage = () => {
-  const { questions, setQuestions, correctAnswers, setCorrectAnswers, mcqAnswers, setMcqAnswers, graphImages, setGraphImages, form, setForm, clearQuestions } = useSympyQuestions();
+  const { questions, setQuestions, correctAnswers, setCorrectAnswers, mcqAnswers, setMcqAnswers, graphImages, setGraphImages, difficulties, setDifficulties, form, setForm, clearQuestions } = useSympyQuestions();
   const [isGenerating, setIsGenerating] = useState(false);
   // keep track of AI response id similar to the regular generation page (unused for sympy currently)
   const [prevResponseId, setPrevResponseId] = useState<string>("");
@@ -122,6 +122,7 @@ export const SympyGeneratePage = () => {
       setCorrectAnswers(correctAnswers);
       setMcqAnswers(mcqAnswers);
       setGraphImages(graphImages);
+      setDifficulties(new Array(questions.length).fill(form.difficulty));
       const newResp = response.data.responseId || "";
       setPrevResponseId(newResp);
       setForm((prev) => ({ ...prev, prevResponseId: newResp }));
@@ -138,6 +139,7 @@ export const SympyGeneratePage = () => {
     setCorrectAnswers((prev) => prev.filter((_, i) => i !== index));
     setMcqAnswers((prev) => prev.filter((_, i) => i !== index));
     setGraphImages((prev) => prev.filter((_, i) => i !== index));
+    setDifficulties((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleEditQuestion = (
@@ -147,6 +149,7 @@ export const SympyGeneratePage = () => {
       correctAnswer: string;
       detailedAnswer?: string;
       mcqAnswers: string[];
+      difficulty: number;
     }
   ) => {
     setQuestions((prev) =>
@@ -157,6 +160,9 @@ export const SympyGeneratePage = () => {
     );
     setMcqAnswers((prev) =>
       prev.map((m, i) => i === index ? editedData.mcqAnswers.join(",") : m)
+    );
+    setDifficulties((prev) =>
+      prev.map((diff, i) => i === index ? editedData.difficulty : diff)
     );
   };
 
@@ -181,7 +187,7 @@ export const SympyGeneratePage = () => {
         ...generatedQuestionInfo,
         section: form.section,
         questionType: form.question_type,
-        difficulty: form.difficulty,
+        difficulty: generatedQuestionInfo.difficulty,
         keywords: form.keywords,
         responseId: prevResponseId,
         graphImg: generatedQuestionInfo.graphImg,
@@ -208,7 +214,7 @@ export const SympyGeneratePage = () => {
       ({
         section: form.section,
         questionType: form.question_type,
-        difficulty: form.difficulty,
+        difficulty: difficulties[index] || form.difficulty,
         question: question,
         correctAnswer: correctAnswers[index],
         mcqAnswers: mcqAnswers[index]?.split(",") || [],
@@ -366,6 +372,7 @@ export const SympyGeneratePage = () => {
               correctAnswers={correctAnswers}
               mcqAnswers={mcqAnswers}
               graphImages={graphImages}
+              difficulties={difficulties}
               onAddToDB={handleAddToDB}
               onEditQuestion={handleEditQuestion}
             />

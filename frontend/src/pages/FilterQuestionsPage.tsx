@@ -201,6 +201,7 @@ const FilterQuestionsPage = () => {
         correctAnswer: string;
         detailedAnswer?: string;
         mcqAnswers: string[];
+        difficulty: number;
     }) => {
         if (!selectedQuestionForEdit?.id) {
             toast.error("No question selected for editing");
@@ -213,6 +214,7 @@ const FilterQuestionsPage = () => {
                 correctAnswer: editedData.correctAnswer,
                 detailedAnswer: editedData.detailedAnswer,
                 mcqAnswers: editedData.mcqAnswers,
+                difficulty: editedData.difficulty,
             };
 
             await updateQuestion(selectedQuestionForEdit.id, updateData);
@@ -411,6 +413,7 @@ const FilterQuestionsPage = () => {
                         correctAnswer: selectedQuestionForEdit.correctAnswer,
                         detailedAnswer: selectedQuestionForEdit.detailedAnswer,
                         mcqAnswers: selectedQuestionForEdit.mcqAnswers || [],
+                        difficulty: selectedQuestionForEdit.difficulty,
                     }}
                 />
             )}

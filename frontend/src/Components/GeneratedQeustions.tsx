@@ -11,6 +11,7 @@ interface GeneratedQuestionsProps {
   correctAnswers: string[];
   mcqAnswers?: string[];
   graphImages?: string[];
+  difficulties?: number[];
   onAddToDB: (generatedQuestionInfo: GeneratedQuestionInfo) => void;
   onEditQuestion: (
     index: number,
@@ -19,6 +20,7 @@ interface GeneratedQuestionsProps {
       correctAnswer: string;
       detailedAnswer?: string;
       mcqAnswers: string[];
+      difficulty: number;
     }
   ) => void;
 }
@@ -29,6 +31,7 @@ const GeneratedQuestions = ({
   correctAnswers,
   mcqAnswers,
   graphImages,
+  difficulties,
   onAddToDB,
   onEditQuestion,
 }: GeneratedQuestionsProps) => {
@@ -50,6 +53,7 @@ const GeneratedQuestions = ({
     question: string;
     correctAnswer: string;
     mcqAnswers: string[];
+    difficulty: number;
   }) => {
     if (editingQuestionIndex !== null) {
       onEditQuestion(editingQuestionIndex, editedData);
@@ -97,6 +101,13 @@ const GeneratedQuestions = ({
                   {`Question ${index + 1}: ${questions[index]}`}
                 </MathJax>
               </h3>
+              <Box sx={{ mb: 1 }}>
+                <strong>Difficulty: </strong>
+                {difficulties && difficulties[index] ? 
+                  (difficulties[index] === 1 ? "Easy" : difficulties[index] === 2 ? "Medium" : "Hard") + 
+                  ` (${difficulties[index]})` : 
+                  "Not specified"}
+              </Box>
               <h5>
                 {"Detailed Answer: \n"}
                 {detailedAnswers && detailedAnswers[index]
@@ -149,6 +160,7 @@ const GeneratedQuestions = ({
                   mcqAnswers: mcqAnswers?.[index]
                     ? parseMcqAnswers(mcqAnswers[index])
                     : undefined,
+                  difficulty: difficulties?.[index] || 1,
                   graphImg: graphImages?.[index] || undefined,
                   index: index,
                 });
@@ -171,6 +183,7 @@ const GeneratedQuestions = ({
             mcqAnswers: mcqAnswers?.[editingQuestionIndex]
               ? parseMcqAnswers(mcqAnswers[editingQuestionIndex])
               : [],
+            difficulty: difficulties?.[editingQuestionIndex] || 1,
           }}
         />
       )}

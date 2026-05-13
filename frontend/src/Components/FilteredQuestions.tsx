@@ -94,7 +94,7 @@ const FilteredQuestions = ({
                   {" "}
                   <MathJax inline>
                     {" "}
-                    {`Difficulty: ${question.difficulty}`}
+                    {`Difficulty: ${question.difficulty === 1 ? "Easy" : question.difficulty === 2 ? "Medium" : "Hard"} (${question.difficulty})`}
                   </MathJax>
                 </h3>
                 <h3>

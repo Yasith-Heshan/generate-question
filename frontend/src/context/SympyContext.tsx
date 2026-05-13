@@ -7,11 +7,13 @@ interface SympyContextType {
   correctAnswers: string[];
   mcqAnswers: string[];
   graphImages: string[];
+  difficulties: number[];
   form: SympyGeneratorRequestBody;
   setQuestions: Dispatch<SetStateAction<string[]>>;
   setCorrectAnswers: Dispatch<SetStateAction<string[]>>;
   setMcqAnswers: Dispatch<SetStateAction<string[]>>;
   setGraphImages: Dispatch<SetStateAction<string[]>>;
+  setDifficulties: Dispatch<SetStateAction<number[]>>;
   setForm: Dispatch<SetStateAction<SympyGeneratorRequestBody>>;
   clearQuestions: () => void;
 }
@@ -44,6 +46,7 @@ export function SympyProvider({ children }: { children: ReactNode }) {
   const [correctAnswers, setCorrectAnswers] = usePersistedState<string[]>("sq_correctAnswers", []);
   const [mcqAnswers, setMcqAnswers] = usePersistedState<string[]>("sq_mcqAnswers", []);
   const [graphImages, setGraphImages] = usePersistedState<string[]>("sq_graphImages", []);
+  const [difficulties, setDifficulties] = usePersistedState<number[]>("sq_difficulties", []);
   const [form, setForm] = usePersistedState<SympyGeneratorRequestBody>("sq_form", {
     section: "",
     question_type: "",
@@ -58,11 +61,12 @@ export function SympyProvider({ children }: { children: ReactNode }) {
     setCorrectAnswers([]);
     setMcqAnswers([]);
     setGraphImages([]);
+    setDifficulties([]);
   };
 
   return (
     <SympyContext.Provider
-      value={{ questions, correctAnswers, mcqAnswers, graphImages, form, setQuestions, setCorrectAnswers, setMcqAnswers, setGraphImages, setForm, clearQuestions }}
+      value={{ questions, correctAnswers, mcqAnswers, graphImages, difficulties, form, setQuestions, setCorrectAnswers, setMcqAnswers, setGraphImages, setDifficulties, setForm, clearQuestions }}
     >
       {children}
     </SympyContext.Provider>

@@ -30,6 +30,7 @@ export interface GeneratedQuestionInfo {
   correctAnswer: string;
   detailedAnswer?: string;
   mcqAnswers?: string[];
+  difficulty: number;
   index: number;
   // optional id returned from generation API so that saved questions can
   // be associated with a particular response batch

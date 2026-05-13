@@ -9,6 +9,10 @@ import {
     Box,
     Chip,
     IconButton,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
 } from "@mui/material";
 import { Add as AddIcon, Close as CloseIcon, Edit as EditIcon, Check as CheckIcon, ContentCopy as CopyIcon } from "@mui/icons-material";
 import { MathJaxContext, MathJax } from "better-react-mathjax";
@@ -21,12 +25,14 @@ interface EditQuestionModalProps {
         correctAnswer: string;
         detailedAnswer?: string;
         mcqAnswers: string[];
+        difficulty: number;
     }) => void;
     initialData: {
         question: string;
         correctAnswer: string;
         detailedAnswer?: string;
         mcqAnswers: string[];
+        difficulty: number;
     };
 }
 
@@ -40,6 +46,7 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
     const [correctAnswer, setCorrectAnswer] = useState("");
     const [detailedAnswer, setDetailedAnswer] = useState("");
     const [mcqAnswers, setMcqAnswers] = useState<string[]>([]);
+    const [difficulty, setDifficulty] = useState<number>(1);
     const [newMcqAnswer, setNewMcqAnswer] = useState("");
     const [editingMcqIndex, setEditingMcqIndex] = useState<number | null>(null);
     const [editingMcqValue, setEditingMcqValue] = useState("");
@@ -54,6 +61,7 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
             setCorrectAnswer(initialData.correctAnswer);
             setDetailedAnswer(initialData.detailedAnswer || "");
             setMcqAnswers(initialData.mcqAnswers || []);
+            setDifficulty(initialData.difficulty);
             setNewMcqAnswer("");
             setEditingMcqIndex(null);
             setEditingMcqValue("");
@@ -114,6 +122,7 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
             correctAnswer,
             detailedAnswer: detailedAnswer || undefined,
             mcqAnswers,
+            difficulty,
         });
         onClose();
     };
@@ -148,6 +157,22 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
                                 </MathJaxContext>
                             </Box>
                         )}
+                    </Box>
+
+                    {/* Difficulty Field */}
+                    <Box>
+                        <FormControl fullWidth variant="outlined">
+                            <InputLabel>Difficulty</InputLabel>
+                            <Select
+                                value={difficulty}
+                                onChange={(e) => setDifficulty(Number(e.target.value))}
+                                label="Difficulty"
+                            >
+                                <MenuItem value={1}>Easy (1)</MenuItem>
+                                <MenuItem value={2}>Medium (2)</MenuItem>
+                                <MenuItem value={3}>Hard (3)</MenuItem>
+                            </Select>
+                        </FormControl>
                     </Box>
 
                     {/* Correct Answer Field */}
