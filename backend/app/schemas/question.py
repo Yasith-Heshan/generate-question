@@ -1,7 +1,9 @@
 from pydantic import BaseModel
 from typing import Optional, List
 from beanie import PydanticObjectId
-    
+from datetime import datetime
+
+
 class QuestionGenerateRequestBody(BaseModel):
     section: str
     questionType: str
@@ -9,22 +11,30 @@ class QuestionGenerateRequestBody(BaseModel):
     description: str
     count: int
     image: Optional[str] = None  # Optional field for image content
-    detailedAnswer: Optional[bool] = False  # Optional field to indicate if detailed answer is required
+    detailedAnswer: Optional[bool] = (
+        False  # Optional field to indicate if detailed answer is required
+    )
     exampleQuestion: Optional[str] = None  # Optional field for an example question
     prevResponseId: Optional[str] = None  # Optional field for request ID
-    keywords: Optional[List[str]] = []  # Optional field for keywords associated with the question
-    
+    keywords: Optional[List[str]] = (
+        []
+    )  # Optional field for keywords associated with the question
+
+
 class QuestionResponseBody(BaseModel):
     questions: List[str]
     detailedAnswers: Optional[List[str]] = None  # Optional field for detailed answer
     correctAnswers: List[str]
-    mcqAnswers: Optional[List[str]]=[]
+    mcqAnswers: Optional[List[str]] = []
     section: str
     questionType: str
     difficulty: int
-    keywords: Optional[List[str]] = []  # Optional field for keywords associated with the question
+    keywords: Optional[List[str]] = (
+        []
+    )  # Optional field for keywords associated with the question
     responseId: str  # Optional field for response ID
-    
+
+
 class Question(BaseModel):
     id: Optional[PydanticObjectId] = None
     section: str
@@ -34,14 +44,18 @@ class Question(BaseModel):
     correctAnswer: str
     detailedAnswer: Optional[str] = None
     mcqAnswers: Optional[List[str]] = []
-    keywords: Optional[List[str]] = []  # Optional field for keywords associated with the question
+    keywords: Optional[List[str]] = (
+        []
+    )  # Optional field for keywords associated with the question
     responseId: Optional[str] = None  # Store the generation response ID
     graphImg: Optional[str] = None  # Optional base64 graph image
     userId: Optional[str] = None
     deleted: Optional[bool] = False
-    
+    createdAt: Optional[datetime] = None  # Timestamp for creation
+
+
 class QuestionFilterRequestBody(BaseModel):
-    section:Optional[str] = None
+    section: Optional[str] = None
     questionType: Optional[str] = None
     difficulty: Optional[int] = None
     keywords: Optional[List[str]] = []
@@ -50,6 +64,7 @@ class QuestionFilterRequestBody(BaseModel):
     limit: Optional[int] = 10
     includeDeleted: Optional[bool] = False
     showDeletedOnly: Optional[bool] = False
+
 
 class QuestionUpdateRequestBody(BaseModel):
     section: Optional[str] = None
@@ -60,13 +75,14 @@ class QuestionUpdateRequestBody(BaseModel):
     detailedAnswer: Optional[str] = None
     mcqAnswers: Optional[List[str]] = None
     keywords: Optional[List[str]] = None
-    
-    
+
+
 class PaginatedQuestionsResponse(BaseModel):
     total: int
     page: int
     limit: int
     questions: List[Question]
+
 
 class TestRequestBody(BaseModel):
     img: str  # Assuming the image is passed as a base64 string or a URL

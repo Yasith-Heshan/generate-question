@@ -1,5 +1,7 @@
 from beanie import Document
 from typing import Optional
+from datetime import datetime
+
 
 class QuestionModel(Document):
     section: str
@@ -14,10 +16,12 @@ class QuestionModel(Document):
     graphImg: Optional[str] = None  # Optional base64 graph image
     is_deleted: Optional[bool] = False
     userId: Optional[str] = None
+    createdAt: Optional[datetime] = None  # Timestamp for creation
 
     class Settings:
         name = "questions"  # Collection name
-        
+
+
 class KeywordModel(Document):
     keyword: str
     section: str
@@ -26,9 +30,9 @@ class KeywordModel(Document):
 
     class Settings:
         name = "keywords"  # Collection name
-        
+
         # Fixed index configuration
         indexes = [
             "keyword",  # Simple index on keyword field
-            [("section", 1), ("questionType", 1), ("difficulty", 1)]  # Compound index
+            [("section", 1), ("questionType", 1), ("difficulty", 1)],  # Compound index
         ]

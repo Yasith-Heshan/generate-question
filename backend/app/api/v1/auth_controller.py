@@ -8,7 +8,9 @@ from app.services.user_service import (
     create_access_token,
     get_user_by_email,
 )
-
+from typing import List
+from app.schemas.user import UserListResponse
+from app.services.user_service import get_all_users
 router = APIRouter()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
@@ -51,3 +53,26 @@ async def read_users_me(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     return UserResponse(id=str(user.id), username=user.username, email=user.email)
+
+
+@router.get("/users", response_model=List[UserListResponse])
+async def get_users(token: str = Depends(oauth2_scheme)):
+    from app.services.user_service import decode_access_token
+
+    token_data = decode_access_token(token)
+    if not token_data or not token_data.email:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
+
+    users = await get_all_users()
+
+    return [
+        UserListResponse(
+            id=str(user.id),
+            username=user.username,
+            email=user.email,
+        )
+        for user in users
+    ]

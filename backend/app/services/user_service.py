@@ -62,3 +62,8 @@ async def authenticate_user(user_login: UserLogin) -> Optional[UserModel]:
     if not verify_password(user_login.password, user.hashed_password):
         return None
     return user
+
+
+
+async def get_all_users():
+    return await UserModel.find_all().to_list()

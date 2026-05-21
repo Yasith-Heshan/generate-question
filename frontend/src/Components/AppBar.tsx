@@ -24,6 +24,7 @@ export default function DrawerAppBar() {
         { name: "OpenAI Gen", path: "/" },
         { name: "Sympy Gen", path: "/sympy" },
         { name: "View", path: "/view" },
+        { name: "Statistics", path: "/statistics" },
         { name: "Logout", path: "/logout" },
       ]
     : [

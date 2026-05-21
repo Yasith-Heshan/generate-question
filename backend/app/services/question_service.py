@@ -1,13 +1,18 @@
 import json
 
-from app.schemas.question import QuestionGenerateRequestBody, QuestionResponseBody,Question, QuestionFilterRequestBody, QuestionUpdateRequestBody
+from app.schemas.question import (
+    QuestionGenerateRequestBody,
+    QuestionResponseBody,
+    Question,
+    QuestionFilterRequestBody,
+    QuestionUpdateRequestBody,
+)
 import openai
 from dotenv import load_dotenv
 import os
 import re
 from fastapi import HTTPException
 from app.models.models import QuestionModel, KeywordModel
-
 
 # Load environment variables from .env file
 load_dotenv()
@@ -16,8 +21,6 @@ load_dotenv()
 # Get API key from environment variable
 openai.api_key = os.getenv("OPENAI_API_KEY")
 client = openai.OpenAI()
-
-
 
 
 def extract_questions(text):
@@ -31,6 +34,7 @@ def extract_questions(text):
     # Strip whitespace from each question
     return [q.strip() for q in matches]
 
+
 def get_detailed_answers(questions: list[str]):
     """
     generates detailed answers for a list of questions using the OpenAI API."""
@@ -38,13 +42,11 @@ def get_detailed_answers(questions: list[str]):
     for question in questions:
         prompt = f"Provide a detailed answer for the following question:\n{question}"
         response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "user", "content": prompt}
-            ]
+            model="gpt-4o", messages=[{"role": "user", "content": prompt}]
         )
         detailed_answers.append(response.choices[0].message.content.strip())
     return detailed_answers if detailed_answers else []
+
 
 def extract_answers(text):
     """
@@ -55,15 +57,19 @@ def extract_answers(text):
     # Extract everything from "Answer:" until "MCQ_Answers:" or end of string
     pattern = r"Answer:\s*(.*?)(?=\nMCQ_Answers:|\Z)"
     matches = re.findall(pattern, text, re.DOTALL)
-    
+
     final_answers = []
     for match in matches:
         # Clean up the match and extract only the numerical answer
-        lines = match.strip().split('\n')
+        lines = match.strip().split("\n")
         # Look for the line that contains a percentage or number (the final answer)
         for line in reversed(lines):  # Start from the end to get the final answer
             line = line.strip()
-            if line and (re.search(r'^\d+\.?\d*%?$', line) or re.search(r'^\d+\.\d+%$', line) or re.search(r'^\d+%$', line)):
+            if line and (
+                re.search(r"^\d+\.?\d*%?$", line)
+                or re.search(r"^\d+\.\d+%$", line)
+                or re.search(r"^\d+%$", line)
+            ):
                 final_answers.append(line)
                 break
         else:
@@ -73,8 +79,9 @@ def extract_answers(text):
                 if line:
                     final_answers.append(line)
                     break
-    
+
     return final_answers
+
 
 def extract_mcq_answers(text):
     """
@@ -88,12 +95,20 @@ def extract_mcq_answers(text):
     return [a.strip() for a in matches]
 
 
-def generate_math_word_problem(question_description,count=1,example_question=None, image=None, prevResponseId=None):
+def generate_math_word_problem(
+    question_description,
+    count=1,
+    example_question=None,
+    image=None,
+    prevResponseId=None,
+):
     imageToText = ""
     if image:
         imageToText = readContentFromImage(image)
         if not imageToText:
-            raise HTTPException(status_code=400, detail="Failed to read content from image.")
+            raise HTTPException(
+                status_code=400, detail="Failed to read content from image."
+            )
     # Define the math prompt
     math_problem_count = "a math problem" if count == 1 else f"{count} math problems"
     math_prompt = f"""
@@ -151,7 +166,6 @@ def generate_math_word_problem(question_description,count=1,example_question=Non
         """
     if prevResponseId == "":
         prevResponseId = None
-    
 
     response = client.responses.create(
         model="gpt-5.2",
@@ -161,28 +175,28 @@ def generate_math_word_problem(question_description,count=1,example_question=Non
     )
     content = response.output_text
     data = json.loads(content)
-    if 'items' in data:
+    if "items" in data:
         # Multiple questions
-        questions = [item.get('Question', '') for item in data['items']]
-        answers = [item.get('Detailed_Answer', '') for item in data['items']]
-        final_answers = [item.get('Answer', '') for item in data['items']]
-        
+        questions = [item.get("Question", "") for item in data["items"]]
+        answers = [item.get("Detailed_Answer", "") for item in data["items"]]
+        final_answers = [item.get("Answer", "") for item in data["items"]]
+
         # Flatten all MCQ answers into one list
-        
+
         mcq_answers_list = [
-            ', '.join(item.get('MCQ_Answers', ""))
-            for item in data['items']
+            ", ".join(item.get("MCQ_Answers", "")) for item in data["items"]
         ]
     else:
         # Single question
-        questions = [data.get('Question', '')]
-        answers = [data.get('Detailed_Answer', '')]
-        final_answers = [data.get('Answer', '')]
-        
+        questions = [data.get("Question", "")]
+        answers = [data.get("Detailed_Answer", "")]
+        final_answers = [data.get("Answer", "")]
+
         # Already a list[str]
-        mcq_answers_list = [','.join(data.get('MCQ_Answers', ''))]
-    
+        mcq_answers_list = [",".join(data.get("MCQ_Answers", ""))]
+
     return questions, final_answers, mcq_answers_list, response.id
+
 
 def readContentFromImage(imageBase64: str) -> str:
     """
@@ -209,22 +223,21 @@ def readContentFromImage(imageBase64: str) -> str:
                             "type": "image_url",
                             "image_url": {
                                 "url": f"data:image/png;base64,{imageBase64}"
-                            }
+                            },
                         },
                         {
                             "type": "text",
-                            "text": "Read and extract all visible text from this image."
-                        }
-                    ]
+                            "text": "Read and extract all visible text from this image.",
+                        },
+                    ],
                 }
             ],
-            max_tokens=1000
+            max_tokens=1000,
         )
         return response.choices[0].message.content.strip()
 
     except Exception as e:
         return f"Error: {str(e)}"
-
 
 
 def createQuestion(requestBody: QuestionGenerateRequestBody) -> QuestionResponseBody:
@@ -235,7 +248,13 @@ def createQuestion(requestBody: QuestionGenerateRequestBody) -> QuestionResponse
     questionType = requestBody.questionType
     difficulty = requestBody.difficulty
     try:
-        questions, answers, mcq_answers,responseId = generate_math_word_problem(description, count, requestBody.exampleQuestion,requestBody.image,requestBody.prevResponseId)
+        questions, answers, mcq_answers, responseId = generate_math_word_problem(
+            description,
+            count,
+            requestBody.exampleQuestion,
+            requestBody.image,
+            requestBody.prevResponseId,
+        )
         detailed_answers = get_detailed_answers(questions) if detailed_Answer else []
         questionResponse = QuestionResponseBody(
             questions=questions,
@@ -246,17 +265,18 @@ def createQuestion(requestBody: QuestionGenerateRequestBody) -> QuestionResponse
             questionType=questionType,
             difficulty=difficulty,
             keywords=requestBody.keywords if requestBody.keywords else [],
-            responseId=responseId
+            responseId=responseId,
         )
         return questionResponse
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-    
-    
-    
-async def add_keywords_to_db(keywords: list[str], section: str, questionType: str, difficulty: int):
+
+
+async def add_keywords_to_db(
+    keywords: list[str], section: str, questionType: str, difficulty: int
+):
     """
-    Add keywords to the keywords collection. 
+    Add keywords to the keywords collection.
     Only inserts keywords that don't already exist to maintain uniqueness.
     """
     try:
@@ -268,36 +288,51 @@ async def add_keywords_to_db(keywords: list[str], section: str, questionType: st
                     keyword=keyword,
                     section=section,
                     questionType=questionType,
-                    difficulty=difficulty
+                    difficulty=difficulty,
                 )
                 await keyword_doc.insert()
     except Exception as e:
         # Log the error but don't fail the question insertion
         print(f"Error inserting keywords: {str(e)}")
 
-async def add_to_db(
-    question: Question
-):
+
+async def add_to_db(question: Question):
     try:
         print("Saving question with userId:", question.userId)
-        doc= QuestionModel(**question.dict())
+        from datetime import datetime
+
+        question_dict = question.dict()
+        if not question_dict.get("createdAt"):
+            question_dict["createdAt"] = datetime.utcnow()
+        doc = QuestionModel(**question_dict)
         await doc.insert()
-        
+
         # Insert keywords if they exist
         if question.keywords:
             await add_keywords_to_db(
                 keywords=question.keywords,
                 section=question.section,
                 questionType=question.questionType,
-                difficulty=question.difficulty
+                difficulty=question.difficulty,
             )
-        
+
         return {"message": "Question added successfully"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
 async def add_all_to_db(questions: list[Question]):
     try:
-        await QuestionModel.insert_many([QuestionModel(**q.dict()) for q in questions])
+        from datetime import datetime
+
+        questions_with_timestamp = []
+        for q in questions:
+            q_dict = q.dict()
+            if not q_dict.get("createdAt"):
+                q_dict["createdAt"] = datetime.utcnow()
+            questions_with_timestamp.append(QuestionModel(**q_dict))
+
+        await QuestionModel.insert_many(questions_with_timestamp)
 
         # Insert keywords for all questions
         for question in questions:
@@ -306,13 +341,14 @@ async def add_all_to_db(questions: list[Question]):
                     keywords=question.keywords,
                     section=question.section,
                     questionType=question.questionType,
-                    difficulty=question.difficulty
+                    difficulty=question.difficulty,
                 )
-        
+
         return {"message": "All questions added successfully"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-    
+
+
 async def _build_filters(questionFilterRequestBody: QuestionFilterRequestBody) -> dict:
     """Construct a MongoDB filter dict from the request body."""
     filters = {}
@@ -326,6 +362,7 @@ async def _build_filters(questionFilterRequestBody: QuestionFilterRequestBody) -
         filters["keywords"] = {"$in": questionFilterRequestBody.keywords}
     if questionFilterRequestBody.id:
         from beanie import PydanticObjectId
+
         filters["_id"] = PydanticObjectId(questionFilterRequestBody.id)
     if questionFilterRequestBody.showDeletedOnly:
         filters["deleted"] = True
@@ -334,7 +371,9 @@ async def _build_filters(questionFilterRequestBody: QuestionFilterRequestBody) -
     return filters
 
 
-async def filter_questions_from_db(questionFilterRequestBody: QuestionFilterRequestBody):
+async def filter_questions_from_db(
+    questionFilterRequestBody: QuestionFilterRequestBody,
+):
     """Return all questions matching the filters (no pagination)."""
     try:
         filters = await _build_filters(questionFilterRequestBody)
@@ -348,7 +387,9 @@ async def filter_questions_from_db(questionFilterRequestBody: QuestionFilterRequ
         raise HTTPException(status_code=400, detail=str(e))
 
 
-async def filter_questions_paginated(questionFilterRequestBody: QuestionFilterRequestBody):
+async def filter_questions_paginated(
+    questionFilterRequestBody: QuestionFilterRequestBody,
+):
     """Return paginated questions with metadata; used by new internal endpoint."""
     try:
         filters = await _build_filters(questionFilterRequestBody)
@@ -368,74 +409,81 @@ async def filter_questions_paginated(questionFilterRequestBody: QuestionFilterRe
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-async def update_question_in_db(question_id: str, update_data: QuestionUpdateRequestBody):
+
+async def update_question_in_db(
+    question_id: str, update_data: QuestionUpdateRequestBody
+):
     """
     Update a question in the database by ID.
     """
     try:
         from beanie import PydanticObjectId
-        
+
         # Convert string ID to ObjectId
         object_id = PydanticObjectId(question_id)
-        
+
         # Find the question by ID
         question = await QuestionModel.get(object_id)
         if not question:
             raise HTTPException(status_code=404, detail="Question not found")
-        
+
         # Get the update data as dict and filter out None values
         update_dict = update_data.dict(exclude_unset=True)
-        
+
         # Update the question with the provided data
         for field, value in update_dict.items():
             if value is not None:
                 setattr(question, field, value)
-        
+
         # Save the updated question
         await question.save()
-        
+
         # Handle keywords update if provided
-        if 'keywords' in update_dict and update_dict['keywords'] is not None:
+        if "keywords" in update_dict and update_dict["keywords"] is not None:
             # Get the updated question data
-            section = getattr(question, 'section', None)
-            question_type = getattr(question, 'questionType', None)
-            difficulty = getattr(question, 'difficulty', None)
-            
+            section = getattr(question, "section", None)
+            question_type = getattr(question, "questionType", None)
+            difficulty = getattr(question, "difficulty", None)
+
             if section and question_type and difficulty is not None:
                 await add_keywords_to_db(
-                    keywords=update_dict['keywords'],
+                    keywords=update_dict["keywords"],
                     section=section,
                     questionType=question_type,
-                    difficulty=difficulty
+                    difficulty=difficulty,
                 )
-        
+
         return {"message": "Question updated successfully", "question": question}
     except Exception as e:
         if "not found" in str(e):
             raise HTTPException(status_code=404, detail="Question not found")
         raise HTTPException(status_code=400, detail=str(e))
-    
+
+
 async def get_all_sections_from_db():
     try:
         print("Attempting to get sections from database...")
-        
+
         # Method 4: Using find with projection (most efficient for this setup)
         # Only fetch the section field to reduce data transfer
         keywords = await KeywordModel.find({}).to_list()
         sections = sorted(list(set([keyword.section for keyword in keywords])))
-        
+
         # If still no sections found, return empty list instead of failing
         if not sections:
             print("No sections found in collection")
             return []
-        
+
         print(f"Found sections: {sections}")
         return sections
     except Exception as e:
         print(f"Error getting sections: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Error: {str(e)}")
 
-async def get_keywords_by_filter(section: str = None, questionType: str = None, difficulty: int = None):
+
+async def get_keywords_by_filter(
+    section: str = None, questionType: str = None, difficulty: int = None
+):
     """
     Get keywords filtered by section, questionType, and/or difficulty.
     """
@@ -447,15 +495,16 @@ async def get_keywords_by_filter(section: str = None, questionType: str = None, 
             filters["questionType"] = questionType
         if difficulty is not None:
             filters["difficulty"] = difficulty
-        
+
         questions = await QuestionModel.find(filters).to_list()
-        keys=[]
+        keys = []
         for a in questions:
-            keys+= a.keywords if a.keywords else []
+            keys += a.keywords if a.keywords else []
         keys = set(keys)
         return list(keys)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
 
 async def get_question_types_by_section(section: str = None):
     """
@@ -465,11 +514,13 @@ async def get_question_types_by_section(section: str = None):
         filters = {}
         if section:
             filters["section"] = section
-        
+
         # Use the same working pattern as other endpoints
         keywords = await QuestionModel.find(filters).to_list()
-        question_types = sorted(list(set([keyword.questionType for keyword in keywords])))
-        
+        question_types = sorted(
+            list(set([keyword.questionType for keyword in keywords]))
+        )
+
         return question_types
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
