@@ -106,10 +106,10 @@ export const SympyGeneratePage = () => {
       setIsGenerating(true);
       const requestBody = { ...form, prevResponseId };
       const response = await generateQuestion(requestBody);
-      let questions: string[] = [];
-      let correctAnswers: string[] = [];
-      let mcqAnswers: string[] = [];
-      let graphImages: string[] = [];
+      const questions: string[] = [];
+      const correctAnswers: string[] = [];
+      const mcqAnswers: string[] = [];
+      const graphImages: string[] = [];
       response.data.forEach((item: SympyGeneratorResponseItem) => {
         questions.push(item.question);
         correctAnswers.push(formatAnswer(item.correct_solution));
@@ -171,7 +171,7 @@ export const SympyGeneratePage = () => {
     clearQuestions();
   };
 
-  const handleGenerateBasedOnThis = async (exampleQuestions: string) => {
+  const handleGenerateBasedOnThis = async (_exampleQuestions: string) => {
     try {
       setForm((prev) => ({
         ...prev,
@@ -181,10 +181,10 @@ export const SympyGeneratePage = () => {
       setIsGenerating(true);
       const updatedForm = { ...form, keywords: form.keywords };
       const response = await generateQuestion(updatedForm);
-      let questions: string[] = [];
-      let correctAnswers: string[] = [];
-      let mcqAnswers: string[] = [];
-      let graphImages: string[] = [];
+      const questions: string[] = [];
+      const correctAnswers: string[] = [];
+      const mcqAnswers: string[] = [];
+      const graphImages: string[] = [];
       
       response.data.forEach((item: SympyGeneratorResponseItem) => {
         questions.push(item.question);
