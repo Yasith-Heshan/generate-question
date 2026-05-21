@@ -153,6 +153,7 @@ const GeneratedQuestions = ({
       )}
       {questions.map((_, index) => (
         <Box
+          key={index}
           sx={{
             bgcolor: "#f5f5f5",
             padding: 2,
@@ -164,7 +165,6 @@ const GeneratedQuestions = ({
           }}
         >
           <Box
-            key={index}
             sx={{
               marginBottom: 2,
             }}

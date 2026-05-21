@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Paper,
@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 
 import { getQuestionStatistics, getUserList } from "../api/statisticsService";
-import type { QuestionStatisticsResponse } from "../api/statisticsService";
+import type { QuestionStatisticsResponse, UserItem } from "../api/statisticsService";
 import { toast } from "react-toastify";
 
 const getDefaultDates = () => {
@@ -102,7 +102,7 @@ const fetchUsers = async () => {
           Filters
         </Typography>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <TextField
               fullWidth
               select
@@ -113,36 +113,42 @@ const fetchUsers = async () => {
               helperText="Select a user or leave empty for all"
             >
               <MenuItem value="">All Users</MenuItem>
-              {statistics?.userStats?.map((stat) => (
-                <MenuItem key={stat.userId ?? stat.username} value={stat.userId ?? stat.username}>
-                  {stat.userId || stat.username}
-                </MenuItem>
-              ))}
+              {users.length > 0
+                ? users.map((u) => (
+                    <MenuItem key={u.userId} value={u.userId}>
+                      {u.username || u.userId}
+                    </MenuItem>
+                  ))
+                : statistics?.userStats?.map((stat) => (
+                    <MenuItem key={stat.userId ?? stat.username} value={stat.userId ?? stat.username}>
+                      {stat.userId || stat.username}
+                    </MenuItem>
+                  ))}
             </TextField>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <TextField
               fullWidth
               label="Start Date"
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              InputLabelProps={{ shrink: true }}
+              slotProps={{ inputLabel: { shrink: true } }}
               variant="outlined"
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <TextField
               fullWidth
               label="End Date"
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              InputLabelProps={{ shrink: true }}
+              slotProps={{ inputLabel: { shrink: true } }}
               variant="outlined"
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={3} sx={{ display: "flex", gap: 1 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }} sx={{ display: "flex", gap: 1 }}>
             <Button
               fullWidth
               variant="contained"
@@ -167,7 +173,7 @@ const fetchUsers = async () => {
       {/* Summary Cards */}
       {statistics && (
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Card>
               <CardContent>
                 <Typography color="textSecondary" gutterBottom>
@@ -179,7 +185,7 @@ const fetchUsers = async () => {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Card>
               <CardContent>
                 <Typography color="textSecondary" gutterBottom>
@@ -191,7 +197,7 @@ const fetchUsers = async () => {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Card>
               <CardContent>
                 <Typography color="textSecondary" gutterBottom>

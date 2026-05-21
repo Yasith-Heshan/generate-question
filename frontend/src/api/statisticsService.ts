@@ -56,6 +56,6 @@ export interface UserItem {
 }
 
 export const getUserList = async (): Promise<UserItem[]> => {
-  const response = await axios.get<UserItem[]>("/api/v1/users");
-  return response.data;
+  const response = await axios.get<{ id: string; username: string; email: string }[]>("/api/v1/auth/users");
+  return response.data.map((u) => ({ userId: u.id, username: u.username }));
 };
