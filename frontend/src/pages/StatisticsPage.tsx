@@ -115,8 +115,8 @@ const fetchUsers = async () => {
               <MenuItem value="">All Users</MenuItem>
               {users.length > 0
                 ? users.map((u) => (
-                    <MenuItem key={u.userId} value={u.userId}>
-                      {u.username || u.userId}
+                    <MenuItem key={u.userId} value={u.username}>
+                      {u.username}
                     </MenuItem>
                   ))
                 : statistics?.userStats?.map((stat) => (
