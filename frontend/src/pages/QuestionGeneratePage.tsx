@@ -295,11 +295,6 @@ export const QuestionGeneratePage = () => {
         exampleQuestion: exampleQuestions,
       }));
       
-      // Create a synthetic event to avoid type issues
-      const submitEvent = {
-        preventDefault: () => {},
-      } as React.FormEvent;
-
       // Validate form
       const sectionErr = validateSection(form.section);
       const questionTypeErr = validateQuestionType(form.questionType);
