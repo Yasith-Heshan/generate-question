@@ -5,6 +5,7 @@ import { Routes, Route } from 'react-router-dom';
 import { QuestionGeneratePage } from "./pages/QuestionGeneratePage";
 import { SympyGeneratePage } from "./pages/SympyGenPage";
 import AuthPage from "./pages/AuthPage";
+import StatisticsPage from "./pages/StatisticsPage";
 import RequireAuth from "./Components/RequireAuth";
 import { QuestionProvider } from "./context/QuestionContext";
 import { FilterProvider } from "./context/FilterContext";
@@ -20,6 +21,7 @@ function App() {
         <Route path="/" element={<RequireAuth><QuestionGeneratePage /></RequireAuth>} />
         <Route path="/sympy" element={<RequireAuth><SympyGeneratePage /></RequireAuth>} />
         <Route path="/view" element={<RequireAuth><FilterQuestionsPage /></RequireAuth>} />
+        <Route path="/statistics" element={<RequireAuth><StatisticsPage /></RequireAuth>} />
         <Route path="/auth" element={<AuthPage />} />
       </Routes>
       <ToastContainer

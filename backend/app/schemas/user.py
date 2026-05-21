@@ -21,3 +21,7 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     email: str | None = None
     
+class UserListResponse(BaseModel):
+    id: str
+    username: str
+    email: str
