@@ -27,15 +27,23 @@ def verify_password(password: str, hashed: str) -> bool:
 def create_access_token(data: dict, expires_delta: Optional[int] = None) -> str:
     to_encode = data.copy()
     now_seconds = int(time.time())
-    expire = now_seconds + (expires_delta if expires_delta is not None else settings.JWT_EXPIRATION_MINUTES * 60)
+    expire = now_seconds + (
+        expires_delta
+        if expires_delta is not None
+        else settings.JWT_EXPIRATION_MINUTES * 60
+    )
     to_encode.update({"exp": expire, "iat": now_seconds})
-    encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
+    )
     return encoded_jwt
 
 
 def decode_access_token(token: str) -> Optional[TokenData]:
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        payload = jwt.decode(
+            token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+        )
         email: str | None = payload.get("sub")
         if email is None:
             return None
@@ -66,10 +74,14 @@ async def create_user_model(
 
 
 async def create_admin_user(user_create: UserCreate) -> UserModel:
-    return await create_user_model(user_create, is_admin=True, requires_password_reset=False)
+    return await create_user_model(
+        user_create, is_admin=True, requires_password_reset=False
+    )
 
 
-async def reset_password_for_user(email: str, new_password: str, force_password_reset: bool = False) -> Optional[UserModel]:
+async def reset_password_for_user(
+    email: str, new_password: str, force_password_reset: bool = False
+) -> Optional[UserModel]:
     user = await get_user_by_email(email)
     if not user:
         return None
@@ -89,7 +101,6 @@ async def authenticate_user(user_login: UserLogin) -> Optional[UserModel]:
     if not verify_password(user_login.password, user.hashed_password):
         return None
     return user
-
 
 
 async def get_all_users():
