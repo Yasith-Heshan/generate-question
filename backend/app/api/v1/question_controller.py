@@ -281,7 +281,11 @@ async def get_statistics(
                 "typeCounts": [
                     {
                         "$group": {
-                            "_id": {"userId": "$userId", "section": "$section", "questionType": "$questionType"},
+                            "_id": {
+                                "userId": "$userId",
+                                "section": "$section",
+                                "questionType": "$questionType",
+                            },
                             "count": {"$sum": 1},
                         }
                     },
@@ -293,7 +297,9 @@ async def get_statistics(
 
     aggregation_results = await questions_collection.aggregate(pipeline).to_list(None)
     if not aggregation_results:
-        aggregation_results = [{"userCounts": [], "sectionCounts": [], "typeCounts": []}]
+        aggregation_results = [
+            {"userCounts": [], "sectionCounts": [], "typeCounts": []}
+        ]
 
     result_set = aggregation_results[0]
     user_counts = result_set.get("userCounts", [])
@@ -322,7 +328,9 @@ async def get_statistics(
                 count=0,
             )
         user_sections[section_name].questionTypeStats.append(
-            QuestionTypeQuestionStat(questionType=question_type, count=type_result.get("count", 0))
+            QuestionTypeQuestionStat(
+                questionType=question_type, count=type_result.get("count", 0)
+            )
         )
 
     # Get total count
