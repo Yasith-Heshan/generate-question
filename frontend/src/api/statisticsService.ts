@@ -1,9 +1,21 @@
 import { openAiAxiosInstance as axios } from "../utils/axiosInstance";
 
+export interface QuestionTypeQuestionStat {
+  questionType: string;
+  count: number;
+}
+
+export interface SectionQuestionStat {
+  section: string;
+  count: number;
+  questionTypeStats?: QuestionTypeQuestionStat[];
+}
+
 export interface UserQuestionStat {
   userId?: string;
   username: string;
   count: number;
+  sectionStats?: SectionQuestionStat[];
 }
 
 export interface QuestionStatisticsResponse {

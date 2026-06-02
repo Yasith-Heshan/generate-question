@@ -24,7 +24,7 @@ from app.schemas.question import (
 from typing import List, Optional
 from app.adapters.db_adapter import MongoDBAdapter
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 MongoDBAdapter.connect()
 
@@ -32,10 +32,22 @@ questionController = APIRouter()
 
 
 # Response models for statistics
+class QuestionTypeQuestionStat(BaseModel):
+    questionType: str
+    count: int
+
+
+class SectionQuestionStat(BaseModel):
+    section: str
+    count: int
+    questionTypeStats: List[QuestionTypeQuestionStat] = Field(default_factory=list)
+
+
 class UserQuestionStat(BaseModel):
     userId: Optional[str]
     username: str = "Anonymous"
     count: int
+    sectionStats: List[SectionQuestionStat] = Field(default_factory=list)
 
 
 class QuestionStatisticsResponse(BaseModel):
@@ -248,27 +260,84 @@ async def get_statistics(
         if date_filter:
             filter_query["createdAt"] = date_filter
 
-    # Group questions by userId and count them
+    # Aggregate counts by user, section, and question type
     pipeline = [
         {"$match": filter_query},
-        {"$group": {"_id": "$userId", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
+        {
+            "$facet": {
+                "userCounts": [
+                    {"$group": {"_id": "$userId", "count": {"$sum": 1}}},
+                    {"$sort": {"count": -1}},
+                ],
+                "sectionCounts": [
+                    {
+                        "$group": {
+                            "_id": {"userId": "$userId", "section": "$section"},
+                            "count": {"$sum": 1},
+                        }
+                    },
+                    {"$sort": {"count": -1}},
+                ],
+                "typeCounts": [
+                    {
+                        "$group": {
+                            "_id": {"userId": "$userId", "section": "$section", "questionType": "$questionType"},
+                            "count": {"$sum": 1},
+                        }
+                    },
+                    {"$sort": {"count": -1}},
+                ],
+            }
+        },
     ]
 
-    results = await questions_collection.aggregate(pipeline).to_list(None)
-    print(pipeline, results,'results')
+    aggregation_results = await questions_collection.aggregate(pipeline).to_list(None)
+    if not aggregation_results:
+        aggregation_results = [{"userCounts": [], "sectionCounts": [], "typeCounts": []}]
+
+    result_set = aggregation_results[0]
+    user_counts = result_set.get("userCounts", [])
+    section_counts = result_set.get("sectionCounts", [])
+    type_counts = result_set.get("typeCounts", [])
+
+    section_by_user: dict = {}
+    for section_result in section_counts:
+        user_id_val = section_result.get("_id", {}).get("userId")
+        section_name = section_result.get("_id", {}).get("section") or "Unknown"
+        if user_id_val not in section_by_user:
+            section_by_user[user_id_val] = {}
+        section_by_user[user_id_val][section_name] = SectionQuestionStat(
+            section=section_name,
+            count=section_result.get("count", 0),
+        )
+
+    for type_result in type_counts:
+        user_id_val = type_result.get("_id", {}).get("userId")
+        section_name = type_result.get("_id", {}).get("section") or "Unknown"
+        question_type = type_result.get("_id", {}).get("questionType") or "Unknown"
+        user_sections = section_by_user.setdefault(user_id_val, {})
+        if section_name not in user_sections:
+            user_sections[section_name] = SectionQuestionStat(
+                section=section_name,
+                count=0,
+            )
+        user_sections[section_name].questionTypeStats.append(
+            QuestionTypeQuestionStat(questionType=question_type, count=type_result.get("count", 0))
+        )
+
     # Get total count
     total_count = await questions_collection.count_documents(filter_query)
 
     # Format results
     user_stats = []
-    for result in results:
+    for result in user_counts:
         user_id_val = result.get("_id")
         user_stats.append(
             UserQuestionStat(
                 userId=user_id_val,
                 username=user_id_val or "Anonymous",
                 count=result.get("count", 0),
+                sectionStats=list(section_by_user.get(user_id_val, {}).values()),
             )
         )
 
