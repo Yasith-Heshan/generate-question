@@ -14,17 +14,36 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import { Link, useLocation } from "react-router-dom";
+import { getProfile } from "../api/authService";
 
 const drawerWidth = 240;
 
 export default function DrawerAppBar() {
+  const [isAdmin, setIsAdmin] = React.useState(false);
   const isAuthenticated = Boolean(localStorage.getItem("access_token"));
+
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      getProfile()
+        .then((response) => {
+          setIsAdmin(response.data.is_admin);
+          localStorage.setItem("is_admin", response.data.is_admin ? "true" : "false");
+        })
+        .catch(() => {
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("is_admin");
+          setIsAdmin(false);
+        });
+    }
+  }, [isAuthenticated]);
+
   const navItems = isAuthenticated
     ? [
         { name: "OpenAI Gen", path: "/" },
         { name: "Sympy Gen", path: "/sympy" },
         { name: "View", path: "/view" },
-        { name: "Statistics", path: "/statistics" },
+        ...(isAdmin ? [{ name: "Statistics", path: "/statistics" }] : []),
+        ...(isAdmin ? [{ name: "User Management", path: "/admin/users" }] : []),
         { name: "Logout", path: "/logout" },
       ]
     : [

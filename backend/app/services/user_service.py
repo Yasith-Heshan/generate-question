@@ -48,10 +48,37 @@ async def get_user_by_email(email: str) -> Optional[UserModel]:
     return await UserModel.find_one(UserModel.email == email.lower())
 
 
-async def create_user_model(user_create: UserCreate) -> UserModel:
+async def create_user_model(
+    user_create: UserCreate,
+    is_admin: bool = False,
+    requires_password_reset: bool = False,
+) -> UserModel:
     hashed_password = hash_password(user_create.password)
-    user = UserModel(username=user_create.username, email=user_create.email.lower(), hashed_password=hashed_password)
+    user = UserModel(
+        username=user_create.username,
+        email=user_create.email.lower(),
+        hashed_password=hashed_password,
+        is_admin=is_admin,
+        requires_password_reset=requires_password_reset,
+    )
     await user.insert()
+    return user
+
+
+async def create_admin_user(user_create: UserCreate) -> UserModel:
+    return await create_user_model(user_create, is_admin=True, requires_password_reset=False)
+
+
+async def reset_password_for_user(email: str, new_password: str, force_password_reset: bool = False) -> Optional[UserModel]:
+    user = await get_user_by_email(email)
+    if not user:
+        return None
+    user.hashed_password = hash_password(new_password)
+    if force_password_reset:
+        user.requires_password_reset = True
+    else:
+        user.requires_password_reset = False
+    await user.save()
     return user
 
 

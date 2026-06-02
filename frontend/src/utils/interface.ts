@@ -105,6 +105,20 @@ export interface UserLoginRequest {
   password: string;
 }
 
+export interface UserProfile {
+  id: string;
+  username: string;
+  email: string;
+  is_admin: boolean;
+}
+
+export interface UserListItem {
+  id: string;
+  username: string;
+  email: string;
+  is_admin: boolean;
+}
+
 export interface AuthResponse {
   access_token: string;
   token_type: string;

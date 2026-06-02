@@ -1,17 +1,26 @@
 import AppBar from "./Components/AppBar";
 import { ToastContainer } from "react-toastify";
 import FilterQuestionsPage from "./pages/FilterQuestionsPage";
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { QuestionGeneratePage } from "./pages/QuestionGeneratePage";
 import { SympyGeneratePage } from "./pages/SympyGenPage";
 import AuthPage from "./pages/AuthPage";
 import StatisticsPage from "./pages/StatisticsPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
 import RequireAuth from "./Components/RequireAuth";
 import { QuestionProvider } from "./context/QuestionContext";
 import { FilterProvider } from "./context/FilterContext";
 import { SympyProvider } from "./context/SympyContext";
 
 function App() {
+  const RequireAdmin = ({ children }: { children: JSX.Element }) => {
+    const isAdmin = localStorage.getItem("is_admin") === "true";
+    if (!isAdmin) {
+      return <Navigate to="/" replace />;
+    }
+    return children;
+  };
+
   return (
     <QuestionProvider>
     <FilterProvider>
@@ -21,7 +30,8 @@ function App() {
         <Route path="/" element={<RequireAuth><QuestionGeneratePage /></RequireAuth>} />
         <Route path="/sympy" element={<RequireAuth><SympyGeneratePage /></RequireAuth>} />
         <Route path="/view" element={<RequireAuth><FilterQuestionsPage /></RequireAuth>} />
-        <Route path="/statistics" element={<RequireAuth><StatisticsPage /></RequireAuth>} />
+        <Route path="/statistics" element={<RequireAuth><RequireAdmin><StatisticsPage /></RequireAdmin></RequireAuth>} />
+        <Route path="/admin/users" element={<RequireAuth><RequireAdmin><AdminUsersPage /></RequireAdmin></RequireAuth>} />
         <Route path="/auth" element={<AuthPage />} />
       </Routes>
       <ToastContainer
