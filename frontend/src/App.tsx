@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import AppBar from "./Components/AppBar";
 import { ToastContainer } from "react-toastify";
 import FilterQuestionsPage from "./pages/FilterQuestionsPage";
@@ -13,12 +14,14 @@ import { FilterProvider } from "./context/FilterContext";
 import { SympyProvider } from "./context/SympyContext";
 
 function App() {
-  const RequireAdmin = ({ children }: { children: JSX.Element }) => {
+  const RequireAdmin = ({ children }: { children: ReactElement }) => {
     const isAdmin = localStorage.getItem("is_admin") === "true";
+
     if (!isAdmin) {
       return <Navigate to="/" replace />;
     }
-    return children;
+
+    return <>{children}</>;
   };
 
   return (
