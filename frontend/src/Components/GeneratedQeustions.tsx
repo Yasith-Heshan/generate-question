@@ -4,7 +4,7 @@ import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Chip from "@mui/material/Chip";
 import { MathJaxContext, MathJax } from "better-react-mathjax";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import type { GeneratedQuestionInfo } from "../utils/interface";
 import EditQuestionModal from "./EditQuestionModal";
 
@@ -44,8 +44,14 @@ const GeneratedQuestions = ({
   const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
   const [selectedQuestions, setSelectedQuestions] = useState<Set<number>>(new Set());
   const [newQuestionsCount, setNewQuestionsCount] = useState(0);
+  const [renderVersion, setRenderVersion] = useState(0);
   const prevCountRef = useRef(0);
   const questionsContainerRef = useRef<HTMLDivElement>(null);
+
+  // Force re-render when any data changes
+  useEffect(() => {
+    setRenderVersion((prev) => prev + 1);
+  }, [questions, correctAnswers, detailedAnswers, mcqAnswers, difficulties]);
 
   // Track when new questions are generated and show them
   useEffect(() => {
@@ -54,6 +60,8 @@ const GeneratedQuestions = ({
       const count = questions.length - prevCountRef.current;
       setNewQuestionsCount(count);
       prevCountRef.current = questions.length;
+      // Clear selections when new questions arrive to avoid index mismatches
+      setSelectedQuestions(new Set());
       if (questionsContainerRef.current) {
         questionsContainerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
       }
@@ -97,12 +105,12 @@ const GeneratedQuestions = ({
       } else {
         newSet.add(index);
       }
-      return newSet;
+      return new Set(newSet);
     });
   };
 
   const handleSelectAll = () => {
-    if (selectedQuestions.size === questions.length) {
+    if (selectedQuestions.size === questions.length && questions.length > 0) {
       setSelectedQuestions(new Set());
     } else {
       setSelectedQuestions(new Set(questions.map((_, i) => i)));
@@ -153,7 +161,7 @@ const GeneratedQuestions = ({
       )}
       {questions.map((_, index) => (
         <Box
-          key={index}
+          key={`question-${renderVersion}-${index}`}
           sx={{
             bgcolor: "#f5f5f5",
             padding: 2,

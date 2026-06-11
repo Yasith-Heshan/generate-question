@@ -265,21 +265,31 @@ export const QuestionGeneratePage = () => {
       difficulty: number;
     }
   ) => {
-    setQuestions((prev) =>
-      prev.map((q, i) => i === index ? editedData.question : q)
-    );
-    setCorrectAnswers((prev) =>
-      prev.map((a, i) => i === index ? editedData.correctAnswer : a)
-    );
-    setDetailedAnswers((prev) =>
-      prev.map((d, i) => i === index ? (editedData.detailedAnswer || "") : d)
-    );
-    setMcqAnswers((prev) =>
-      prev.map((m, i) => i === index ? editedData.mcqAnswers.join(",") : m)
-    );
-    setDifficulties((prev) =>
-      prev.map((diff, i) => i === index ? editedData.difficulty : diff)
-    );
+    setQuestions((prev) => {
+      const newQuestions = [...prev];
+      newQuestions[index] = editedData.question;
+      return newQuestions;
+    });
+    setCorrectAnswers((prev) => {
+      const newAnswers = [...prev];
+      newAnswers[index] = editedData.correctAnswer;
+      return newAnswers;
+    });
+    setDetailedAnswers((prev) => {
+      const newAnswers = [...prev];
+      newAnswers[index] = editedData.detailedAnswer || "";
+      return newAnswers;
+    });
+    setMcqAnswers((prev) => {
+      const newAnswers = [...prev];
+      newAnswers[index] = editedData.mcqAnswers.join(",");
+      return newAnswers;
+    });
+    setDifficulties((prev) => {
+      const newDifficulties = [...prev];
+      newDifficulties[index] = editedData.difficulty;
+      return newDifficulties;
+    });
   };
 
 
