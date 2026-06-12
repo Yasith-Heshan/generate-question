@@ -300,11 +300,6 @@ export const QuestionGeneratePage = () => {
 
   const handleGenerateBasedOnThis = async (exampleQuestions: string) => {
     try {
-      setForm((prev) => ({
-        ...prev,
-        exampleQuestion: exampleQuestions,
-      }));
-      
       // Validate form
       const sectionErr = validateSection(form.section);
       const questionTypeErr = validateQuestionType(form.questionType);
@@ -314,7 +309,7 @@ export const QuestionGeneratePage = () => {
         return;
       }
 
-      // Trigger generation with updated form
+      // Trigger generation with updated form including example questions
       setIsGenerating(true);
       const updatedForm = { ...form, exampleQuestion: exampleQuestions };
       const response = await generateQuestion(updatedForm);
@@ -331,6 +326,10 @@ export const QuestionGeneratePage = () => {
       setMcqAnswers(tempMcqAnswers);
       setDifficulties(new Array(response.data.questions.length).fill(form.difficulty));
       setPrevResponseId(response.data.responseId || "");
+      setForm((prev) => ({
+        ...prev,
+        exampleQuestion: exampleQuestions,
+      }));
       toast.success("Generated new questions based on your examples!");
     } catch (error) {
       console.error("Error generating based on examples:", error);

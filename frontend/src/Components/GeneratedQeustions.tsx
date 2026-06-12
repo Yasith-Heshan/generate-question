@@ -149,8 +149,18 @@ const GeneratedQuestions = ({
             onClick={() => {
               const selectedIndices = Array.from(selectedQuestions).sort((a, b) => a - b);
               const exampleQuestionsText = selectedIndices
-                .map((i) => `Q${i + 1}: ${questions[i]}\nAnswer: ${correctAnswers[i]}${detailedAnswers?.[i] ? `\nDetailed: ${detailedAnswers[i]}` : ""}${mcqAnswers?.[i] ? `\nOptions: ${mcqAnswers[i]}` : ""}\n`)
-                .join("\n");
+                .map((i) => {
+                  let questionText = `Q${i + 1}: ${questions[i]}\n`;
+                  questionText += `Answer: ${correctAnswers[i]}\n`;
+                  if (detailedAnswers?.[i]) {
+                    questionText += `Detailed Answer: ${detailedAnswers[i]}\n`;
+                  }
+                  if (mcqAnswers?.[i]) {
+                    questionText += `MCQ Options: ${mcqAnswers[i]}\n`;
+                  }
+                  return questionText;
+                })
+                .join("\n---\n");
               onGenerateBasedOnThis(exampleQuestionsText);
               setSelectedQuestions(new Set());
             }}

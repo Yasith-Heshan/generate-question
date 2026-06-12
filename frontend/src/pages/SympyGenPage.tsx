@@ -179,15 +179,11 @@ export const SympyGeneratePage = () => {
     clearQuestions();
   };
 
-  const handleGenerateBasedOnThis = async (_exampleQuestions: string) => {
+  const handleGenerateBasedOnThis = async (exampleQuestions: string) => {
     try {
-      setForm((prev) => ({
-        ...prev,
-        keywords: prev.keywords,
-      }));
-
       setIsGenerating(true);
-      const updatedForm = { ...form, keywords: form.keywords };
+      // Include example questions in the form for the API
+      const updatedForm = { ...form, keywords: exampleQuestions };
       const response = await generateQuestion(updatedForm);
       const questions: string[] = [];
       const correctAnswers: string[] = [];
