@@ -27,6 +27,8 @@ interface GeneratedQuestionsProps {
     }
   ) => void;
   onGenerateBasedOnThis?: (exampleQuestions: string) => void;
+  onAddAllToDB?: () => void;
+  isGenerating?: boolean;
 }
 
 const GeneratedQuestions = ({
@@ -39,6 +41,8 @@ const GeneratedQuestions = ({
   onAddToDB,
   onEditQuestion,
   onGenerateBasedOnThis,
+  onAddAllToDB,
+  isGenerating,
 }: GeneratedQuestionsProps) => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
@@ -126,7 +130,14 @@ const GeneratedQuestions = ({
 
   return (
     <Box sx={{ marginTop: 4 }} ref={questionsContainerRef}>
-      <h2>Generated Questions</h2>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+        <h2>Generated Questions</h2>
+        {!isGenerating && questions.length > 0 && onAddAllToDB && (
+          <Button variant="contained" onClick={onAddAllToDB}>
+            Add All To DB
+          </Button>
+        )}
+      </Box>
       {onGenerateBasedOnThis && questions.length > 0 && (
         <Box sx={{ mb: 3, p: 2, bgcolor: "#e3f2fd", borderRadius: 1 }}>
           <Box sx={{ mb: 2 }}>

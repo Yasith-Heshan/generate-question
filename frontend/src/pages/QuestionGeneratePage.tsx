@@ -409,7 +409,9 @@ export const QuestionGeneratePage = () => {
 
   return (
     <Grid container spacing={2} justifyContent="center">
+      
       <Grid size={4}>
+        
         <Box
           sx={{
             borderRadius: 1,
@@ -564,6 +566,7 @@ export const QuestionGeneratePage = () => {
             />
             {file && (
               <Box>
+                
                 <Stack direction="column" justifyContent="center" alignItems="center" sx={{ mb: 1 }}>
                   {imagePreviewUrl && (
                     <Box sx={{ mt: 2 }}>
@@ -640,7 +643,7 @@ export const QuestionGeneratePage = () => {
         </Box>
       </Grid>
       <Grid size={8}>
-        <Box>
+        <Box sx={{ display: "flex", flexDirection: "column", height: "calc(100vh - 64px)" }}>
           {isGenerating && (
             <Box display="flex" justifyContent="center" alignItems="center">
               <CircularProgress />
@@ -648,8 +651,8 @@ export const QuestionGeneratePage = () => {
           )}
           <Box
             sx={{
-              height: "70vh",
               overflowY: "auto",
+              flex: 1,
             }}
           >
             <GeneratedQuestions
@@ -661,20 +664,9 @@ export const QuestionGeneratePage = () => {
               onAddToDB={handleAddToDB}
               onEditQuestion={handleEditQuestion}
               onGenerateBasedOnThis={handleGenerateBasedOnThis}
+              onAddAllToDB={handleAddAllToDB}
+              isGenerating={isGenerating}
             />
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              marginTop: 2,
-            }}
-          >
-            {!isGenerating && (
-              <Button variant="contained" onClick={() => handleAddAllToDB()}>
-                Add All To DB
-              </Button>
-            )}
           </Box>
         </Box>
       </Grid>
