@@ -4,7 +4,7 @@ import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Chip from "@mui/material/Chip";
 import { MathJaxContext, MathJax } from "better-react-mathjax";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect} from "react";
 import type { GeneratedQuestionInfo } from "../utils/interface";
 import EditQuestionModal from "./EditQuestionModal";
 
