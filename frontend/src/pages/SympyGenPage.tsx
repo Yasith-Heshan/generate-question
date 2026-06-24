@@ -183,7 +183,7 @@ export const SympyGeneratePage = () => {
     try {
       setIsGenerating(true);
       // Include example questions in the form for the API
-      const updatedForm = { ...form, keywords: exampleQuestions };
+      const updatedForm = { ...form, keywords: [exampleQuestions] };
       const response = await generateQuestion(updatedForm);
       const questions: string[] = [];
       const correctAnswers: string[] = [];
