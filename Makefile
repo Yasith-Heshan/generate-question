@@ -46,6 +46,12 @@ env-manager-up:
 env-manager-down:
 	docker-compose -f docker-compose.tools.yml down
 
+mongo-ui-up:
+	docker-compose -f docker-compose.tools.yml up -d mongo-express
+
+mongo-ui-down:
+	docker-compose -f docker-compose.tools.yml stop mongo-express
+
 help:
 	@echo "Available commands:"
 	@echo "  make run            - Start the Docker containers"
@@ -59,6 +65,8 @@ help:
 	@echo "  make logs               - View logs of the Docker containers"
 	@echo "  make env-manager-up     - Start the .env manager UI on port 8888"
 	@echo "  make env-manager-down   - Stop the .env manager UI"
+	@echo "  make mongo-ui-up        - Start mongo-express DB UI on port 8889"
+	@echo "  make mongo-ui-down      - Stop mongo-express DB UI"
 	@echo "  make help               - Show this help message"
 	@echo ""
 	@echo "Environment: $(ENV) (using $(COMPOSE_FILE))"

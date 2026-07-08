@@ -11,3 +11,22 @@ services:
       - ./sympy:/project/sympy
     environment:
       - PROJECT_ROOT=/project
+
+  mongo-express:
+    container_name: generate-question-mongo-express
+    image: mongo-express:latest
+    ports:
+      - "8889:8081"
+    environment:
+      - ME_CONFIG_MONGODB_URL=mongodb://testUser:test@rocketchat-compose-mongodb-1:27018/quiz?authSource=admin
+      - ME_CONFIG_BASICAUTH=false
+    networks:
+      - default
+      - rocketchat
+
+networks:
+  default:
+    driver: bridge
+  rocketchat:
+    external: true
+    name: rocketchat-compose_default
