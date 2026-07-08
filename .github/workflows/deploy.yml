@@ -17,5 +17,5 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd generate-question/
+            cd /home/mathemly/generate-question/
             make pull build stop run
