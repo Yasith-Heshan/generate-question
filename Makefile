@@ -47,10 +47,16 @@ env-manager-down:
 	docker-compose -f docker-compose.tools.yml down
 
 mongo-ui-up:
-	docker-compose -f docker-compose.tools.yml up -d mongo-express
+	docker run -d \
+		--name generate-question-mongo-express \
+		--network rocketchat-compose_default \
+		-p 8889:8081 \
+		-e ME_CONFIG_MONGODB_URL="mongodb://gquser:generateQuestion2025@rocketchat-compose-mongodb-1:27018/quiz?authSource=admin" \
+		-e ME_CONFIG_BASICAUTH=false \
+		mongo-express:latest
 
 mongo-ui-down:
-	docker-compose -f docker-compose.tools.yml stop mongo-express
+	docker rm -f generate-question-mongo-express
 
 help:
 	@echo "Available commands:"
