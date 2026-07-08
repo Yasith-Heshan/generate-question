@@ -1,0 +1,13 @@
+services:
+  env-manager:
+    container_name: generate-question-env-manager
+    build:
+      context: ./env-manager
+    ports:
+      - "8888:8080"
+    volumes:
+      - ./backend:/project/backend
+      - ./frontend:/project/frontend
+      - ./sympy:/project/sympy
+    environment:
+      - PROJECT_ROOT=/project

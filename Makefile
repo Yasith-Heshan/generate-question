@@ -39,6 +39,13 @@ prune:
 
 pull:
 	git pull
+
+env-manager-up:
+	docker-compose -f docker-compose.tools.yml up -d --build
+
+env-manager-down:
+	docker-compose -f docker-compose.tools.yml down
+
 help:
 	@echo "Available commands:"
 	@echo "  make run            - Start the Docker containers"
@@ -48,8 +55,10 @@ help:
 	@echo "  make build-no-cache - Build without using cache"
 	@echo "  make clean          - Remove containers, images, and volumes"
 	@echo "  make prune          - Clean up all Docker resources"
-	@echo "  make pull           - Pull the latest changes from the repository"
-	@echo "  make logs           - View logs of the Docker containers"
-	@echo "  make help           - Show this help message"
+	@echo "  make pull               - Pull the latest changes from the repository"
+	@echo "  make logs               - View logs of the Docker containers"
+	@echo "  make env-manager-up     - Start the .env manager UI on port 8888"
+	@echo "  make env-manager-down   - Stop the .env manager UI"
+	@echo "  make help               - Show this help message"
 	@echo ""
 	@echo "Environment: $(ENV) (using $(COMPOSE_FILE))"
