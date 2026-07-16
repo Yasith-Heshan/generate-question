@@ -18,7 +18,7 @@ services:
     ports:
       - "8889:8081"
     environment:
-      - ME_CONFIG_MONGODB_URL=mongodb://testUser:test@rocketchat-compose-mongodb-1:27018/quiz?authSource=admin
+      - ME_CONFIG_MONGODB_URL=mongodb://gquser:generateQuestion2025@rocketchat-compose-mongodb-1:27018/quiz?authSource=admin
       - ME_CONFIG_BASICAUTH=false
     networks:
       - default
