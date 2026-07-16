@@ -111,13 +111,36 @@ def generate_math_word_problem(
             )
     # Define the math prompt
     math_problem_count = "a math problem" if count == 1 else f"{count} math problems"
+    
+    # Build example instructions if examples are provided
+    example_instructions = ""
+    if example_question:
+        example_instructions = f"""
+        EXAMPLE TEMPLATE TO FOLLOW:
+        {example_question}
+        
+        CRITICAL INSTRUCTIONS FOR FOLLOWING THE TEMPLATE:
+        1. Analyze the structure, difficulty level, and complexity of the provided examples
+        2. Generate NEW questions that follow the EXACT SAME:
+           - Question structure and format
+           - Difficulty level and complexity
+           - Answer format and style
+           - Level of detail in Detailed Answers
+           - MCQ option generation approach (difficulty, plausibility of wrong answers)
+        3. Maintain consistency across all generated questions
+        4. Do NOT deviate from the template style shown in the examples
+        5. Ensure new questions are similar in complexity and presentation to the examples
+        """
+    
+    previous_response_instruction = ""
+    if prevResponseId:
+        previous_response_instruction = "\n        IMPORTANT: Generate questions in the exact same format and style as the previous response."
+    
     math_prompt = f"""
         Create {math_problem_count} based on the following requirements:
 
         DESCRIPTION: {question_description}
-        {imageToText if image else ""}
-        {"EXAMPLE TO FOLLOW: " + example_question if example_question else ""}
-        {"IMPORTANT: Generate questions in the exact same format and style as the previous response." if prevResponseId else ""}
+        {imageToText if image else ""}{example_instructions}{previous_response_instruction}
 
         MATHEMATICAL REQUIREMENTS:
         - Ensure all mathematical expressions are valid and well-defined
